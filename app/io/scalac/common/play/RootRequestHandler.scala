@@ -21,10 +21,9 @@ class RootRequestHandler @Inject()
 
   private def addCorrelation(request: RequestHeader) = {
     //TODO with Play 2.6 use Attr
-    val cid: String = request.headers.get(Correlation.HeaderCorrelationId).getOrElse(Correlation.withNew.toString)
-    val userId: Option[String] = request.headers.get(Correlation.HeaderUserId)
+    val correlation = Correlation.getCorrelation(request.headers.toSimpleMap)
     request.copy(tags = request.tags + (
-      Correlation.HeaderCorrelationId -> cid,
-      Correlation.HeaderUserId -> userId.getOrElse("")))
+      Correlation.HeaderCorrelationId -> correlation.correlationId.id,
+      Correlation.HeaderUserId -> correlation.userId.fold("")(_.id)))
   }
 }
