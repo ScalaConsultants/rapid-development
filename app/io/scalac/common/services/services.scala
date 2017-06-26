@@ -13,7 +13,9 @@ package object services {
   trait ServiceError extends Error
   trait ExternalServiceError extends Error
   trait DatabaseError extends Error
+
   final case class ServiceFailed(msg: String) extends ServiceError
+  final case class DatabaseCallFailed(msg: String) extends DatabaseError
 
 //  final case class ExternalServiceValidationError(endpoint: String, parseErrors: Seq[(JsPath, scala.Seq[ValidationError])])
 //    extends ExternalServiceError
