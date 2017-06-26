@@ -6,6 +6,8 @@ Play App for rapid development
 * Play 2.5.15
 * Slick 3.2 (`without PlaySlick extension!`) with help from [pregenerated common repositories calls](https://github.com/gonmarques/slick-repo)
 * Postgres 9.6.2 with [Slick Postgres extensions](https://github.com/tminglei/slick-pg)
+* Cats
+* Monix
 
 
 ### Database for local development
