@@ -1,6 +1,6 @@
 package io.scalac.common.services
 
-import com.google.inject.Singleton
+import com.google.inject.{Inject, Singleton}
 import monix.eval.Task
 
 trait ExternalHealthCheck {
@@ -9,6 +9,8 @@ trait ExternalHealthCheck {
 }
 
 @Singleton
-final case class ExternalHealthChecks(
-  services: Seq[ExternalHealthCheck]
-)
+class ExternalHealthChecks @Inject() (
+  databaseHealthCheck: DatabaseHealthCheck
+) {
+  val services: Seq[ExternalHealthCheck] = Seq(databaseHealthCheck)
+}

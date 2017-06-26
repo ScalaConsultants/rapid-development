@@ -1,4 +1,4 @@
-package io.scalac.domain.entities
+package io.scalac.domain
 
 import com.github.tminglei.slickpg._
 import play.api.libs.json.{JsValue, Json}

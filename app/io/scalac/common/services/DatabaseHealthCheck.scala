@@ -1,16 +1,19 @@
 package io.scalac.common.services
 
-import javax.sql.DataSource
-
+import com.google.inject.{Inject, Singleton}
 import monix.eval.Task
+import slick.basic.DatabaseConfig
 
-class DatabaseHealthCheck(db: DataSource) extends ExternalHealthCheck {
+import io.scalac.domain.PostgresJdbcProfile
+
+@Singleton
+class DatabaseHealthCheck @Inject() (dbConfig: DatabaseConfig[PostgresJdbcProfile]) extends ExternalHealthCheck {
 
   override def apply(): Task[ExternalHealthCheckResponse] = {
     Task {
       val start = System.currentTimeMillis()
       try {
-        val connection = db.getConnection
+        val connection = dbConfig.db.source.createConnection()
         try {
           connection.createStatement().executeQuery("SELECT 1")
         } finally {
