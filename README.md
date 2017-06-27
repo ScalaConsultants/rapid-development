@@ -17,6 +17,7 @@ Play App for rapid development
 - [x] logging ready and configured
 - [x] flyway migrations https://flywaydb.org/
 - [x] data persistence
+- [x] Ability to Dockerize application
 - [ ] CRUD REST API for a dummy resource - `in progress`
 - [ ] migration to Play 2.6
 - [ ] tests
