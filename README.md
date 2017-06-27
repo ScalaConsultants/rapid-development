@@ -19,6 +19,7 @@ Play App for rapid development
 - [x] data persistence
 - [x] Ability to Dockerize application
 - [ ] CRUD REST API for a dummy resource - `in progress`
+- [ ] Swagger specification for dummy resource
 - [ ] migration to Play 2.6
 - [ ] tests
 - [ ] static views
