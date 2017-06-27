@@ -15,6 +15,8 @@ import io.scalac.common.core.Correlation
 import io.scalac.common.logger.Logging
 import io.scalac.common.services.{HealthCheckServicesImpl, _}
 import io.scalac.domain.PostgresJdbcProfile
+import io.scalac.domain.dao.{NotesDao, SlickNotesDao}
+import io.scalac.services.{DefaultNotesService, NotesService}
 
 class Module extends AbstractModule with Logging {
 
@@ -29,6 +31,10 @@ class Module extends AbstractModule with Logging {
     bind(classOf[Config]).annotatedWith(Names.named("BuildInfo")).toInstance(ConfigFactory.load("build-info"))
 
     bind(classOf[ServiceProfiler]).to(classOf[NoopServiceProfiler]).asEagerSingleton()
+
+    bind(classOf[NotesDao]).to(classOf[SlickNotesDao]).asEagerSingleton()
+
+    bind(classOf[NotesService]).to(classOf[DefaultNotesService]).asEagerSingleton()
     bind(classOf[HealthCheckServices]).to(classOf[HealthCheckServicesImpl]).asEagerSingleton()
   }
 

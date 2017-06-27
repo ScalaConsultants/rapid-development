@@ -22,5 +22,7 @@ class SlickNotesDao @Inject() (
   override def findAll(): DBResponse[Seq[Note]] = {
     notesRepo.findAll()
   }
+
+  //TODO find with pagination
 }
 

@@ -38,13 +38,13 @@ class NotesSlickPostgresRepository @Inject() (
   override def pkType = implicitly[BaseTypedType[UUID]]
   override def tableQuery = TableQuery[Notes]
 
-  class Notes(tag: slick.lifted.Tag) extends Table[Note](tag, "NOTE") with Versioned[UUID, Int] {
-    override def id = column[UUID]("ID", O.PrimaryKey)
-    def creator = column[String]("CREATOR", O.SqlType("VARCHAR(100)"))
-    def note = column[String]("NOTE", O.SqlType("TEXT"))
-    def createdAt = column[DateTime]("CREATED_AT")
-    def updatedAt = column[DateTime]("UPDATED_AT")
-    override def version = column[Int]("VERSION")
+  class Notes(tag: slick.lifted.Tag) extends Table[Note](tag, "notes") with Versioned[UUID, Int] {
+    override def id = column[UUID]("id", O.PrimaryKey)
+    def creator = column[String]("creator", O.SqlType("VARCHAR(100)"))
+    def note = column[String]("note", O.SqlType("TEXT"))
+    def createdAt = column[DateTime]("created_at")
+    def updatedAt = column[DateTime]("updated_at")
+    override def version = column[Int]("version")
 
     def * = (id.?, creator, note, createdAt, updatedAt, version.?) <> ((
       Note.apply _).tupled, Note.unapply)

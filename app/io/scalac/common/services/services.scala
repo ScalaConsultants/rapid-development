@@ -10,13 +10,13 @@ package object services {
 
   sealed trait Error extends Product with Serializable
 
+  //TODO should they all contain msg: String?
   trait ServiceError extends Error
   trait ExternalServiceError extends Error
   trait DatabaseError extends Error
 
   final case class ServiceFailed(msg: String) extends ServiceError
   final case class DatabaseCallFailed(msg: String) extends DatabaseError
-
 //  final case class ExternalServiceValidationError(endpoint: String, parseErrors: Seq[(JsPath, scala.Seq[ValidationError])])
 //    extends ExternalServiceError
 
@@ -31,9 +31,21 @@ package object services {
   type Context[_] = ServiceContext
   type Logger[_] = AppLogger
 
-  type Response[R] = Task[Either[ServiceError, R]]
+  type Response[R] = Task[Either[ServiceError, R]] //TODO or () => ...
   type ExternalResponse[R] = Task[Either[ExternalServiceError, R]]
   type DBResponse[R] = Task[Either[DatabaseError, R]]
+
+  implicit class DbResponseImplicits[T](dBResponse: DBResponse[T]) {
+
+    import cats.syntax.either._
+
+    val toServiceResponse = {
+      dBResponse.map(_.leftMap {
+        case DatabaseCallFailed(msg) =>
+          ServiceFailed(msg)
+      })
+    }
+  }
 
   trait Service[-Req, +Res, E <: Error] {
 
