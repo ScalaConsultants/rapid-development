@@ -9,6 +9,24 @@ Play App for rapid development
 * Cats
 * Monix
 
+#### Goals
+
+- [x] dependency injection of some form
+- [x] build setting
+- [x] ready to deploy from the get-go
+- [x] logging ready and configured
+- [x] flyway migrations https://flywaydb.org/
+- [x] data persistence
+- [] CRUD REST API for a dummy resource - `in progress`
+- [] migration to Play 2.6
+- [] tests
+- [] static views
+- [] versioned endpoints - path or header negotiation?
+- [] CRSF?
+- [] SSL?
+- [] base authentication with lib like https://github.com/mohiva/play-silhouette
+- [] 3rdParty service call with build in timeout and circuit breaker
+
 
 ### Database for local development
 
@@ -32,4 +50,4 @@ Status of the application itself, additionally shows build data.
 
 ### Example API: manipulating notes
 
-##### pagination
+##### `/notes?limit=10&offset=0` - find all available notes with required pagination
