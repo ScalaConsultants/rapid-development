@@ -46,8 +46,8 @@ sbt -Dflyway.url="jdbc:postgresql://127.0.0.1:5432/rapid-development" -Dflyway.u
 
 #### /healthcheck
 Status of the application itself, additionally shows build data.
-* `/healthcheck?diagnostic=true` - status of the application and all connected external sources like database etc.
+* `GET /healthcheck?diagnostic=true` - status of the application and all connected external sources like database etc.
 
 ### Example API: manipulating notes
 
-* `/notes?limit=10&offset=0` - find all available notes with required pagination
+* `GET /notes?limit=10&offset=0` - find all available notes with required pagination
