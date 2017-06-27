@@ -9,4 +9,4 @@ GET     /assets/*file                              controllers.Assets.versioned(
 GET     /healthcheck                               io.scalac.common.controllers.HealthCheckController.healthCheck(diagnostic: Boolean ?= false)
 
 # Notes
-GET     /notes                                     io.scalac.controllers.NotesController.all()
+GET     /notes                                     io.scalac.controllers.NotesController.all(limit: Int, offset: Int)

@@ -9,6 +9,7 @@ import org.joda.time.DateTime
 import slick.ast.BaseTypedType
 import slick.basic.DatabaseConfig
 
+import io.scalac.common.play.Pagination
 import io.scalac.domain.PostgresJdbcProfile
 
 final case class Note(
@@ -24,14 +25,11 @@ final case class Note(
   override def withVersion(version: Int): Note = this.copy(version = Some(version))
 }
 
-//TODO or JdbcProfile and import PostgresJdbcProfile.api._ below? Safe?
 @Singleton
 class NotesSlickPostgresRepository @Inject() (
-//  val dbProfile: PostgresJdbcProfile
-  val dbConfig: DatabaseConfig[PostgresJdbcProfile]
+  val dbConfig: DatabaseConfig[PostgresJdbcProfile]//TODO or JdbcProfile and import PostgresJdbcProfile.api._ below? Safe?
 ) extends VersionedRepository[Note, UUID, Int](dbConfig.profile) {
 
-//  import dbProfile.api._
   import dbConfig.profile.api._
   override type TableType = Notes
   override val versionType = implicitly[BaseTypedType[Int]]
@@ -48,5 +46,9 @@ class NotesSlickPostgresRepository @Inject() (
 
     def * = (id.?, creator, note, createdAt, updatedAt, version.?) <> ((
       Note.apply _).tupled, Note.unapply)
+  }
+
+  def listAll(pagination: Pagination): DBIO[Seq[Note]] = {
+    Compiled(tableQuery.drop(pagination.offset).take(pagination.limit)).result
   }
 }

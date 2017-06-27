@@ -6,7 +6,7 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import play.api.libs.json._
 
-import io.scalac.common.play.GenericError
+import io.scalac.common.play.{GenericError, Pagination}
 
 object Serializers {
 
@@ -22,8 +22,14 @@ object Serializers {
   implicit val dateTimeFormat = Format(dateTimeReads, dateTimeWrites)
 
   implicit val genericErrorFormat = Json.format[GenericError]
+  implicit val paginationFormat = Json.format[Pagination]
 
   implicit class JsonImplicits[T: OWrites](obj: T) {
+
+    def asJson = Json.prettyPrint(Json.toJson(obj))
+  }
+
+  implicit class JsonTraversableImplicits[T: OWrites](obj: Traversable[T]) {
 
     def asJson = Json.prettyPrint(Json.toJson(obj))
   }

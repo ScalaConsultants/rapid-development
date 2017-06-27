@@ -39,7 +39,7 @@ package object services {
 
     import cats.syntax.either._
 
-    val toServiceResponse = {
+    val toServiceResponse: Task[Either[ServiceError, T]] = {
       dBResponse.map(_.leftMap {
         case DatabaseCallFailed(msg) =>
           ServiceFailed(msg)
