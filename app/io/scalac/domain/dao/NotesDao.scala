@@ -1,5 +1,7 @@
 package io.scalac.domain.dao
 
+import java.util.UUID
+
 import com.google.inject.{Inject, Singleton}
 
 import io.scalac.common.play.Pagination
@@ -11,6 +13,7 @@ trait NotesDao {
 //  def findAll: Service[Unit, Seq[Note], DatabaseError] //TODO decide
   def findAll(): DBResponse[Seq[Note]]
   def listAll(pagination: Pagination): DBResponse[Seq[Note]]
+  def find(noteId: UUID): DBResponse[Option[Note]]
 }
 
 @Singleton
@@ -21,12 +24,13 @@ class SlickNotesDao @Inject() (
 
   import dBImplicits._
 
-  override def findAll(): DBResponse[Seq[Note]] = {
+  override def findAll(): DBResponse[Seq[Note]] =
     notesRepo.findAll()
-  }
 
-  override def listAll(pagination: Pagination): DBResponse[Seq[Note]] = {
+  override def listAll(pagination: Pagination): DBResponse[Seq[Note]] =
     notesRepo.listAll(pagination)
-  }
+
+  override def find(noteId: UUID): DBResponse[Option[Note]] =
+    notesRepo.findOne(noteId)
 }
 

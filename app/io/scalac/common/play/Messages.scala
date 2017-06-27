@@ -1,6 +1,6 @@
 package io.scalac.common.play
 
-final case class GenericError(error: String)
+final case class GenericResponse(message: String)
 
 final case class Pagination(limit: Int, offset: Int) {
 
