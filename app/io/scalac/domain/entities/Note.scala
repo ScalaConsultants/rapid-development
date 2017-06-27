@@ -23,6 +23,8 @@ final case class Note(
 
   override def withId(id: UUID): Note = this.copy(id = Some(id))
   override def withVersion(version: Int): Note = this.copy(version = Some(version))
+
+  //TODO consider defining here new object for creation purposes....
 }
 
 @Singleton

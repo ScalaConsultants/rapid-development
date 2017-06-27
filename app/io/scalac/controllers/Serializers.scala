@@ -10,5 +10,6 @@ object Serializers {
   import io.scalac.common.play.serializers.Serializers._
 
   implicit val noteFormat = Json.format[Note]
+  implicit val newNoteFormat = Json.format[NewNote]
   implicit val paginatedResponseNoteFormat = Json.format[PaginatedResponse[Note]]
 }

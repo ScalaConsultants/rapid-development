@@ -1,6 +1,7 @@
 package io.scalac.controllers
 
 import java.util.UUID
+import scala.concurrent.Future
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import monix.execution.Scheduler
@@ -31,7 +32,7 @@ class NotesController @Inject()(
       _.fold(
         serviceError => {
           val msg = s"Failed due to: $serviceError"
-          logger.error(s"${request.path} - msg")
+          logger.error(s"${request.path} - $msg")
           InternalServerError(GenericResponse(msg).asJson)
         },
         notes => {
@@ -53,7 +54,7 @@ class NotesController @Inject()(
       _.fold(
         serviceError => {
           val msg = s"Failed due to: $serviceError"
-          logger.error(s"${request.path} - msg")
+          logger.error(s"${request.path} - $msg")
           InternalServerError(GenericResponse(msg).asJson)
         },
         noteOpt => {
@@ -65,5 +66,30 @@ class NotesController @Inject()(
         }
       )
     }
+  }
+
+  def create() = Action.async(parse.json) { request =>
+    implicit val emptyContext = auth.EmptyContext()
+    implicit val cid = Correlation.getCorrelation(request.headers.toSimpleMap)
+    logger.info(s"${request.path}")
+    request.body.validate[NewNote].fold(
+      invalid => Future.successful(BadRequest(GenericResponse(s"Invalid body: ${invalid.mkString(" ")}").asJson)),
+      newNote => {
+        notesService.create(newNote).runAsync.map {
+          _.fold(
+            serviceError => {
+              val msg = s"Failed due to: $serviceError"
+              logger.error(s"${request.path} - $msg")
+              InternalServerError(GenericResponse(msg).asJson)
+            },
+            newUUID => {
+              logger.info(s"${request.path} - successful response")
+              Created(GenericResponse(newUUID.toString).asJson)
+            }
+          )
+        }
+      }
+    )
+
   }
 }

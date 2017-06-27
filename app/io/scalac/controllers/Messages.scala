@@ -1,5 +1,8 @@
 package io.scalac.controllers
 
-import io.scalac.common.play.Pagination
+final case class NewNote(
+  creator: String,
+  note: String
+)
 
 

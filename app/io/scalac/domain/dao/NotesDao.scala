@@ -14,6 +14,7 @@ trait NotesDao {
   def findAll(): DBResponse[Seq[Note]]
   def listAll(pagination: Pagination): DBResponse[Seq[Note]]
   def find(noteId: UUID): DBResponse[Option[Note]]
+  def create(note: Note): DBResponse[UUID]
 }
 
 @Singleton
@@ -32,5 +33,8 @@ class SlickNotesDao @Inject() (
 
   override def find(noteId: UUID): DBResponse[Option[Note]] =
     notesRepo.findOne(noteId)
+
+  override def create(note: Note): DBResponse[UUID] =
+    notesRepo.save(note).map(_.id.get)
 }
 
