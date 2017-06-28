@@ -1,17 +1,20 @@
 package io.scalac.controllers
 
 import java.util.UUID
+
 import scala.concurrent.Future
+
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import monix.execution.Scheduler
 import play.api.mvc.{Action, Controller}
+
 import io.scalac.common.auth
 import io.scalac.common.core.Correlation
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.{GenericResponse, PaginatedResponse, Pagination}
 import io.scalac.common.services.ServiceProfiler
-import io.scalac.services.NotesService
+import io.scalac.services.{IncomingNote, NotesService, UpdateNote}
 
 @Singleton
 class NotesController @Inject()(
@@ -68,11 +71,35 @@ class NotesController @Inject()(
     }
   }
 
+  def update(noteId: UUID) = Action.async(parse.json) { request =>
+    implicit val emptyContext = auth.EmptyContext()
+    implicit val cid = Correlation.getCorrelation(request.headers.toSimpleMap)
+    logger.info(s"${request.path}")
+    request.body.validate[IncomingNote].fold(
+      invalid => Future.successful(BadRequest(GenericResponse(s"Invalid body: ${invalid.mkString(" ")}").asJson)),
+      noteToUpdate => {
+        notesService.update(UpdateNote(noteId, noteToUpdate)).runAsync.map {
+          _.fold(
+            serviceError => {
+              val msg = s"Failed due to: $serviceError"
+              logger.error(s"${request.path} - $msg")
+              InternalServerError(GenericResponse(msg).asJson)
+            },
+            newUUID => {
+              logger.info(s"${request.path} - successful response")
+              Created(GenericResponse(newUUID.toString).asJson)
+            }
+          )
+        }
+      }
+    )
+  }
+
   def create() = Action.async(parse.json) { request =>
     implicit val emptyContext = auth.EmptyContext()
     implicit val cid = Correlation.getCorrelation(request.headers.toSimpleMap)
     logger.info(s"${request.path}")
-    request.body.validate[NewNote].fold(
+    request.body.validate[IncomingNote].fold(
       invalid => Future.successful(BadRequest(GenericResponse(s"Invalid body: ${invalid.mkString(" ")}").asJson)),
       newNote => {
         notesService.create(newNote).runAsync.map {

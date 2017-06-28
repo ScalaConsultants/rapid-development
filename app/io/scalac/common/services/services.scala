@@ -16,7 +16,9 @@ package object services {
   trait DatabaseError extends Error
 
   final case class ServiceFailed(msg: String) extends ServiceError
+  final case class EmptyResponse(msg: String) extends ServiceError
   final case class DatabaseCallFailed(msg: String) extends DatabaseError
+  final case class ResourceNotFound(msg: String) extends DatabaseError
 //  final case class ExternalServiceValidationError(endpoint: String, parseErrors: Seq[(JsPath, scala.Seq[ValidationError])])
 //    extends ExternalServiceError
 
@@ -43,6 +45,7 @@ package object services {
       dBResponse.map(_.leftMap {
         case DatabaseCallFailed(msg) =>
           ServiceFailed(msg)
+          //TODO hmm, why it compiles without all matched cases...
       })
     }
   }
