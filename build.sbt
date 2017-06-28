@@ -34,7 +34,7 @@ libraryDependencies ++= Seq(
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test
 )
 
-scalacOptions += "-feature"
+scalacOptions ++= Seq("-feature", "-Xfatal-warnings", "-deprecation", "-unchecked")
 
 resourceGenerators in Compile += (resourceManaged in Compile) map { dir =>
   def Try(command: String) = try { command.!! } catch { case e: Exception => command + " failed: " + e.getMessage }
