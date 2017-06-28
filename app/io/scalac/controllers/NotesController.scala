@@ -13,7 +13,7 @@ import io.scalac.common.auth
 import io.scalac.common.core.Correlation
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.{GenericResponse, PaginatedResponse, Pagination}
-import io.scalac.common.services.ServiceProfiler
+import io.scalac.common.services.{EmptyResponse, ServiceProfiler}
 import io.scalac.services.{IncomingNote, NotesService, UpdateNote}
 
 @Singleton
@@ -80,10 +80,14 @@ class NotesController @Inject()(
       noteToUpdate => {
         notesService.update(UpdateNote(noteId, noteToUpdate)).runAsync.map {
           _.fold(
-            serviceError => {
-              val msg = s"Failed due to: $serviceError"
-              logger.error(s"${request.path} - $msg")
-              InternalServerError(GenericResponse(msg).asJson)
+            {
+              case EmptyResponse(msg) =>
+                logger.info(msg)
+                NotFound(GenericResponse(msg).asJson)
+              case serviceError =>
+                val msg = s"Failed due to: $serviceError"
+                logger.error(s"${request.path} - $msg")
+                InternalServerError(GenericResponse(msg).asJson)
             },
             newUUID => {
               logger.info(s"${request.path} - successful response")

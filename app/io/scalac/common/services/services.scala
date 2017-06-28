@@ -11,9 +11,9 @@ package object services {
   sealed trait Error extends Product with Serializable
 
   //TODO should they all contain msg: String?
-  trait ServiceError extends Error
-  trait ExternalServiceError extends Error
-  trait DatabaseError extends Error
+  sealed trait ServiceError extends Error
+  sealed trait ExternalServiceError extends Error
+  sealed trait DatabaseError extends Error
 
   final case class ServiceFailed(msg: String) extends ServiceError
   final case class EmptyResponse(msg: String) extends ServiceError
@@ -45,7 +45,8 @@ package object services {
       dBResponse.map(_.leftMap {
         case DatabaseCallFailed(msg) =>
           ServiceFailed(msg)
-          //TODO hmm, why it compiles without all matched cases...
+        case ResourceNotFound(msg) =>
+          EmptyResponse(msg)
       })
     }
   }
