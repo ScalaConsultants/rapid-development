@@ -29,7 +29,8 @@ package object syntax {
 
   implicit class TaskEitherOps[L, R](val task: Task[Either[L, R]]) extends AnyVal {
 
-    def cmap[U](f: R => U): Task[Either[L, U]] = task.map(_.map(f))
+    def tmap[U](f: R => U): Task[Either[L, U]] = task.map(_.map(f))
+    def tflatMap[U](f: R => Either[L, U]): Task[Either[L, U]] = task.map(_.flatMap(f))
 
     def eitherT: EitherT[Task, L, R] = EitherT(task)
   }

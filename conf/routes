@@ -6,4 +6,10 @@
 GET     /assets/*file                              controllers.Assets.versioned(path="/public", file: Asset)
 
 # Health check
-GET     /healthcheck                               @io.scalac.common.controllers.HealthCheckController.healthCheck(diagnostic: Boolean ?= false)
+GET     /healthcheck                               io.scalac.common.controllers.HealthCheckController.healthCheck(diagnostic: Boolean ?= false)
+
+# Notes
+GET     /notes                                     io.scalac.controllers.NotesController.all(limit: Int, offset: Int)
+GET     /notes/:noteId                             io.scalac.controllers.NotesController.find(noteId: java.util.UUID)
+PUT     /notes/:noteId                             io.scalac.controllers.NotesController.update(noteId: java.util.UUID)
+POST    /notes                                     io.scalac.controllers.NotesController.create()

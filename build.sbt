@@ -11,6 +11,7 @@ lazy val root = (project in file("."))
   .enablePlugins(PlayScala)
   .settings {
     javaOptions in Universal +=  "-Dpidfile.path=/dev/null"
+    flywayLocations := Seq("filesystem:conf/db/migration")
   }
 
 libraryDependencies ++= Seq(
@@ -18,13 +19,22 @@ libraryDependencies ++= Seq(
   ws,
   "com.github.pureconfig" %% "pureconfig" % "0.7.0",
   "org.typelevel" %% "cats" % "0.9.0",
-  "io.monix" %% "monix" % "2.3.0",
-  "io.monix" %% "monix-cats" % "2.3.0",
+  "io.monix" %% "monix" % Versions.monix,
+  "io.monix" %% "monix-cats" % Versions.monix,
+
+  "org.postgresql" % "postgresql" % "42.1.1", //Java JDBC 4.2 (JRE 8+) driver
+  "com.typesafe.slick" %% "slick" % Versions.slick,
+  "com.typesafe.slick" %% "slick-hikaricp" % Versions.slick,
+  "com.byteslounge" %% "slick-repo" % "1.4.3",
+  "com.github.tminglei" %% "slick-pg" % Versions.slickPg,
+  "com.github.tminglei" %% "slick-pg_joda-time" % Versions.slickPg,
+  "com.github.tminglei" %% "slick-pg_play-json" % Versions.slickPg,
+
   "org.scalatest" %% "scalatest" % "3.0.1" % Test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test
 )
 
-scalacOptions += "-feature"
+scalacOptions ++= Seq("-feature", "-Xfatal-warnings", "-deprecation", "-unchecked")
 
 resourceGenerators in Compile += (resourceManaged in Compile) map { dir =>
   def Try(command: String) = try { command.!! } catch { case e: Exception => command + " failed: " + e.getMessage }
@@ -39,7 +49,7 @@ resourceGenerators in Compile += (resourceManaged in Compile) map { dir =>
       ("gitCommit", Try("git rev-parse HEAD")),
       ("projectName", sys.env.getOrElse("CI_PROJECT_NAME", default = "")),
       ("pipelineId", sys.env.getOrElse("CI_PIPELINE_ID", default = "-1")),
-      ("ciInstigator", sys.env.getOrElse("GITLAB_USER_ID", default = ""))
+      ("ciInstigator", sys.env.getOrElse("CI_USER_ID", default = ""))
     ) map {case (nm, value) => "%s=\"%s\"".format(nm.trim, value.trim) }
     IO.write(targetFile, "build {\n" + content.mkString("  ", "\n  ", "\n") + "}\n")
     Seq(targetFile)

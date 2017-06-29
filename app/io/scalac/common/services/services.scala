@@ -10,12 +10,18 @@ package object services {
 
   sealed trait Error extends Product with Serializable
 
-  trait ServiceError extends Error
-  trait ExternalServiceError extends Error
-  trait DatabaseError extends Error
-  final case class ServiceFailed(msg: String) extends ServiceError
+  //TODO still not sure if it actually makes sense
+  sealed trait ServiceError extends Error
+  sealed trait ExternalServiceError extends Error
+  sealed trait DatabaseError extends Error
 
-//  final case class ExternalServiceValidationError(endpoint: String, parseErrors: Seq[(JsPath, scala.Seq[ValidationError])])
+  final case class ServiceFailed(msg: String) extends ServiceError
+  final case class MissingResource(msg: String) extends ServiceError
+  final case class InvalidResource(msg: Seq[String]) extends ServiceError
+  final case class DatabaseCallFailed(msg: String) extends DatabaseError
+  final case class ResourceNotFound(msg: String) extends DatabaseError
+  final case class InvalidDbResource(msg: Seq[String]) extends DatabaseError
+  //  final case class ExternalServiceValidationError(endpoint: String, parseErrors: Seq[(JsPath, scala.Seq[ValidationError])])
 //    extends ExternalServiceError
 
   trait ServiceProfiler {
@@ -29,9 +35,25 @@ package object services {
   type Context[_] = ServiceContext
   type Logger[_] = AppLogger
 
-  type Response[R] = Task[Either[ServiceError, R]]
+  type ServiceResponse[R] = Task[Either[ServiceError, R]] //TODO or () => ...
   type ExternalResponse[R] = Task[Either[ExternalServiceError, R]]
-  type DBResponse[R] = Task[Either[DatabaseError, R]]
+  type DatabaseResponse[R] = Task[Either[DatabaseError, R]]
+
+  implicit class DbResponseImplicits[T](dBResponse: DatabaseResponse[T]) {
+
+    import cats.syntax.either._
+
+    val toServiceResponse: Task[Either[ServiceError, T]] = {
+      dBResponse.map(_.leftMap {
+        case DatabaseCallFailed(msg) =>
+          ServiceFailed(msg)
+        case ResourceNotFound(msg) =>
+          MissingResource(msg)
+        case InvalidDbResource(errors) =>
+          InvalidResource(errors)
+      })
+    }
+  }
 
   trait Service[-Req, +Res, E <: Error] {
 

@@ -1,0 +1,15 @@
+version: '3'
+services:
+  PostgreSQL:
+    restart: on-failure
+    #https://github.com/sameersbn/docker-postgresql
+    image: sameersbn/postgresql:9.6-2
+    ports:
+      - "5432:5432"
+    environment:
+      - DEBUG=false
+      - DB_USER=postgres-dev
+      - DB_PASS=secretpass
+      - DB_NAME=rapid-development
+    #volumes:
+    #  - /srv/docker/postgresql:/var/lib/postgresql
