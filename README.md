@@ -18,9 +18,9 @@ Play App for rapid development
 - [x] flyway migrations https://flywaydb.org/
 - [x] data persistence
 - [x] Ability to Dockerize application
-- [ ] CRUD REST API for a dummy resource - `in progress`
+- [x] CRUD REST API for a dummy resource
 - [ ] Swagger specification for dummy resource
-- [ ] migration to Play 2.6
+- [ ] migration to Play 2.6  - `in progress`
 - [ ] tests
 - [ ] static views
 - [ ] versioned endpoints - path or header negotiation?
