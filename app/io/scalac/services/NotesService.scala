@@ -13,10 +13,11 @@ import io.scalac.common.services._
 import io.scalac.common.syntax._
 import io.scalac.domain.dao.NotesDao
 import io.scalac.domain.entities.Note
+import io.scalac.services.ValidatedUtils._
 
 trait NotesService {
 
-  def findAll(): Response[Seq[OutgoingNote]] //TODO prepare Service without request...
+  def findAll(): ServiceResponse[Seq[OutgoingNote]] //TODO prepare Service without request...
   def list: Service[Pagination, Seq[OutgoingNote], ServiceError]
   def find: Service[UUID, Option[OutgoingNote], ServiceError]
   def create: Service[IncomingNote, UUID, ServiceError]
@@ -29,7 +30,7 @@ class DefaultNotesService @Inject()(
   implicit val profiler: ServiceProfiler
 ) extends NotesService with Logging {
 
-  override def findAll(): Response[Seq[OutgoingNote]] = {
+  override def findAll(): ServiceResponse[Seq[OutgoingNote]] = {
     //TODO what to do with db message? Map to Service message or just pass through?
     notesDao.findAll().tmap(_.map(Conversions.toOutgoingNote)).toServiceResponse
   }
@@ -49,22 +50,24 @@ class DefaultNotesService @Inject()(
   override def create: Service[IncomingNote, UUID, ServiceError] =
     Service("io.scalac.services.DefaultNotesService.create") { req =>
       implicit serviceContext =>
-        //TODO add some cats validation
+
         val now = DateTime.now()
-        val note = Note(Some(UUID.randomUUID()), req.creator, req.note, now, now, None)
-        notesDao.create(note).toServiceResponse
+        (for {
+          _       <- req.validate().asDatabaseResponse.eitherT
+          note    = Note(Some(UUID.randomUUID()), req.creator, req.note, now, now, None)
+          newUUID <- notesDao.create(note).eitherT
+        } yield newUUID).value.toServiceResponse
     }
 
   override def update: Service[UpdateNote, OutgoingNote, ServiceError] =
     Service("io.scalac.services.DefaultNotesService.update") { req =>
       implicit serviceContext =>
 
-        val findExistingNote: DBResponse[Note] = notesDao.find(req.id).tflatMap { optNote =>
+        val findExistingNote: DatabaseResponse[Note] = notesDao.find(req.id).tflatMap { optNote =>
           optNote.fold(ResourceNotFound("Cannot update non-existent element").asLeft[Note])(_.asRight)
         }
 
         def performUpdate(existingNote: Note) = {
-          //TODO add some cats validation
           val noteToUpdate = existingNote.update(
             creator = req.incomingNote.creator,
             note = req.incomingNote.note)
@@ -72,8 +75,9 @@ class DefaultNotesService @Inject()(
         }
 
         val op = for {
+          _            <- req.incomingNote.validate().asDatabaseResponse.eitherT
           existingNote <- findExistingNote.eitherT
-          updatedNote <- performUpdate(existingNote).eitherT
+          updatedNote  <- performUpdate(existingNote).eitherT
         } yield Conversions.toOutgoingNote(updatedNote)
 
         op.value.toServiceResponse

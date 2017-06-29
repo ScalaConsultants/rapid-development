@@ -13,7 +13,7 @@ import io.scalac.common.auth
 import io.scalac.common.core.Correlation
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.{GenericResponse, PaginatedResponse, Pagination}
-import io.scalac.common.services.{EmptyResponse, ServiceProfiler}
+import io.scalac.common.services.{InvalidResource, MissingResource, ServiceProfiler}
 import io.scalac.services.{IncomingNote, NotesService, UpdateNote}
 
 @Singleton
@@ -76,14 +76,17 @@ class NotesController @Inject()(
     implicit val cid = Correlation.getCorrelation(request.headers.toSimpleMap)
     logger.info(s"${request.path}")
     request.body.validate[IncomingNote].fold(
-      invalid => Future.successful(BadRequest(GenericResponse(s"Invalid body: ${invalid.mkString(" ")}").asJson)),
+      invalid => Future.successful(BadRequest(GenericResponse(s"Invalid body: ${invalid.mkString("\n")}").asJson)),
       noteToUpdate => {
         notesService.update(UpdateNote(noteId, noteToUpdate)).runAsync.map {
           _.fold(
             {
-              case EmptyResponse(msg) =>
+              case MissingResource(msg) =>
                 logger.info(msg)
                 NotFound(GenericResponse(msg).asJson)
+              case InvalidResource(errors) =>
+                logger.info("Cannot update note with invalid request")
+                BadRequest(GenericResponse(s"Invalid body: ${errors.mkString("\n")}").asJson)
               case serviceError =>
                 val msg = s"Failed due to: $serviceError"
                 logger.error(s"${request.path} - $msg")
@@ -108,10 +111,14 @@ class NotesController @Inject()(
       newNote => {
         notesService.create(newNote).runAsync.map {
           _.fold(
-            serviceError => {
-              val msg = s"Failed due to: $serviceError"
-              logger.error(s"${request.path} - $msg")
-              InternalServerError(GenericResponse(msg).asJson)
+            {
+              case InvalidResource(errors) =>
+                logger.info("Cannot update note with invalid request")
+                BadRequest(GenericResponse(s"Invalid body: ${errors.mkString("\n")}").asJson)
+              case serviceError =>
+                val msg = s"Failed due to: $serviceError"
+                logger.error(s"${request.path} - $msg")
+                InternalServerError(GenericResponse(msg).asJson)
             },
             newUUID => {
               logger.info(s"${request.path} - successful response")

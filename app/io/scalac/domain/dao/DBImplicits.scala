@@ -10,7 +10,7 @@ import monix.execution.Scheduler
 import slick.basic.DatabaseConfig
 import slick.dbio.DBIO
 
-import io.scalac.common.services.{DBResponse, DatabaseCallFailed, DatabaseError}
+import io.scalac.common.services.{DatabaseResponse, DatabaseCallFailed, DatabaseError}
 import io.scalac.domain.PostgresJdbcProfile
 
 class DBImplicits @Inject()(
@@ -24,7 +24,7 @@ class DBImplicits @Inject()(
     * separate <i>database</i> Execution Context to execute the call, than goes back
     * to <i>global</i> execution context.
     */
-  implicit def executeOperation[T](databaseOperation: DBIO[T]): DBResponse[T] = {
+  implicit def executeOperation[T](databaseOperation: DBIO[T]): DatabaseResponse[T] = {
     Task.fork(Task.fromFuture(dbConfig.db.run(databaseOperation)), dbEx)
       .map(_.asRight[DatabaseError])
       .asyncBoundary
