@@ -54,3 +54,18 @@ Status of the application itself, additionally shows build data.
 
 * `GET /notes?limit=10&offset=0` - find all available notes with required pagination. Returns `200` or `500`.
 * `GET /notes/:noteId` - find given note. Returns `200`, `404` or `500`.
+* `PUT /notes/:noteId` - update given note. Returns `200`, `400`, `404` or `500`.
+    Expected body
+
+        {
+          "creator": String, lenght: 3 -> 100,
+          "note": String, lenght: 1 -> 5000,
+        }
+
+* `POST /notes` - create new note. Returns `201`, `400` or `500`.
+    Expected body
+
+        {
+          "creator": String, lenght: 3 -> 100,
+          "note": String, lenght: 1 -> 5000,
+        }
