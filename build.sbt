@@ -20,7 +20,7 @@ libraryDependencies ++= Seq(
   guice,
   "com.typesafe.play" %% "play-json" % "2.6.0",
 
-  "com.github.pureconfig" %% "pureconfig" % "0.7.0",
+  "com.github.pureconfig" %% "pureconfig" % "0.7.2",
   "org.typelevel" %% "cats" % "0.9.0",
   "io.monix" %% "monix" % Versions.monix,
   "io.monix" %% "monix-cats" % Versions.monix,
@@ -33,7 +33,7 @@ libraryDependencies ++= Seq(
   "com.github.tminglei" %% "slick-pg_joda-time" % Versions.slickPg,
   "com.github.tminglei" %% "slick-pg_play-json" % Versions.slickPg,
 
-  "org.scalatest" %% "scalatest" % "3.0.1" % Test,
+  "org.scalatest" %% "scalatest" % "3.0.3" % Test,
   "org.scalatestplus.play" %% "scalatestplus-play" % "3.0.0" % Test
 )
 
