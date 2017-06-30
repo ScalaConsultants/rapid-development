@@ -9,10 +9,10 @@ import play.api.libs.json._
 import play.api.mvc._
 
 class HealthCheckController (
-  controllerComponents: ControllerComponents,
   healthCheckServices: HealthCheckServices,
   scheduler: Scheduler)(
-  implicit profiler: ServiceProfiler
+  implicit profiler: ServiceProfiler,
+  controllerComponents: ControllerComponents
 ) extends AbstractController(controllerComponents)
   with Logging {
 

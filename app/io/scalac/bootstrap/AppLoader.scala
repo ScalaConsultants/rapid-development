@@ -6,7 +6,7 @@ import io.scalac.common.controllers.HealthCheckController
 import io.scalac.common.core.Correlation
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.{RootHttpErrorHandler, RootRequestHandler}
-import io.scalac.common.services.{DatabaseHealthCheck, ExternalHealthChecks, HealthCheckServicesImpl, NoopServiceProfiler}
+import io.scalac.common.services.{DatabaseHealthCheck, HealthCheckServicesImpl, NoopServiceProfiler}
 import io.scalac.controllers.NotesController
 import io.scalac.domain.PostgresJdbcProfile
 import io.scalac.domain.dao.{DBExecutor, SlickNotesDao}
@@ -18,6 +18,7 @@ import play.api.ApplicationLoader.Context
 import play.api._
 import play.api.http.HttpRequestHandler
 import play.api.inject.ApplicationLifecycle
+import play.api.mvc.ControllerComponents
 import play.api.routing.Router
 import play.filters.HttpFiltersComponents
 import slick.basic.DatabaseConfig
@@ -37,6 +38,8 @@ class MyComponents(context: Context)
     with _root_.controllers.AssetsComponents
     with Logging {
 
+  implicit val _controllerComponents: ControllerComponents = controllerComponents
+
   val defaultScheduler: Scheduler = monix.execution.Scheduler.Implicits.global
   val databaseScheduler: SchedulerService = Scheduler.io(name="database")
   implicit val serviceProfiler = NoopServiceProfiler
@@ -48,11 +51,11 @@ class MyComponents(context: Context)
 
   lazy val healthCheckController = {
     val dbHealthCheck = new DatabaseHealthCheck(dbConfig)
-    val externalHealthChecks = new ExternalHealthChecks(dbHealthCheck)
+    val externalHealthChecks = List(dbHealthCheck)
     val config = ConfigFactory.load("build-info")
     val services = new HealthCheckServicesImpl(externalHealthChecks, config)
 
-    new HealthCheckController(controllerComponents, services, defaultScheduler)
+    new HealthCheckController(services, defaultScheduler)
   }
 
   lazy val notesController = {

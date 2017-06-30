@@ -7,7 +7,7 @@ import com.typesafe.config.Config
 import monix.eval.Task
 
 class HealthCheckServicesImpl (
-  externalHealthChecks: ExternalHealthChecks,
+  externalHealthChecks: Seq[ExternalHealthCheck],
   config: Config
 ) extends HealthCheckServices {
 
@@ -17,7 +17,7 @@ class HealthCheckServicesImpl (
 
         val externalResponses: Seq[Task[ExternalHealthCheckResponse]] =
           if (req.diagnostics) {
-            externalHealthChecks.services.map(_.apply())
+            externalHealthChecks.map(_.apply())
           } else Seq()
         Task.sequence(externalResponses).map { externalResponses =>
           val success = externalResponses.forall(_.success)
