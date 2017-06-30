@@ -6,11 +6,11 @@ import com.google.inject.Inject
 import com.google.inject.name.Named
 import monix.execution.Scheduler
 import play.api.libs.json._
-import play.api.mvc.{Action, AnyContent, Controller}
+import play.api.mvc.{Action, AnyContent, InjectedController}
 
 import io.scalac.common.auth
-import io.scalac.common.core.Correlation
 import io.scalac.common.logger.Logging
+import io.scalac.common.play.RequestAttributes
 import io.scalac.common.services.{ExternalHealthCheckResponse, HealthCheckRequest, HealthCheckResponse, _}
 
 @Singleton
@@ -18,7 +18,7 @@ class HealthCheckController @Inject()(
   healthCheckServices: HealthCheckServices,
   @Named("DefaultScheduler") scheduler: Scheduler,
   profiler: ServiceProfiler
-) extends Controller
+) extends InjectedController
   with Logging {
 
   implicit val externalHealthCheckWrites = Json.writes[ExternalHealthCheckResponse]
@@ -26,9 +26,9 @@ class HealthCheckController @Inject()(
   implicit val ex: Scheduler = scheduler
   implicit val p: ServiceProfiler = profiler
 
-  def healthCheck(diagnostics: Boolean): Action[AnyContent] = Action.async { request =>
+  def healthCheck(diagnostics: Boolean): Action[AnyContent] = Action.async(parse.default) { request =>
     implicit val emptyContext = auth.EmptyContext()
-    implicit val cid = Correlation.getCorrelation(request.headers.toSimpleMap)
+    implicit val c = request.attrs(RequestAttributes.Correlation)
     logger.info(s"${request.path} - getting app status")
     val future = healthCheckServices.healthCheck(HealthCheckRequest(diagnostics)).runAsync
     future.map { either_ =>

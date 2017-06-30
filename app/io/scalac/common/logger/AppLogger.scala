@@ -35,7 +35,7 @@ case class AppLogger(logger: Slf4jLogger) extends AnyVal {
     * @param specificMetadata log in a structured way
     */
   def trace(message: => String, specificMetadata: Map[String, String])(implicit c: Correlation): Unit =
-    common(c, message, specificMetadata, logger.isTraceEnabled, logger.trace)
+    common(c, message, specificMetadata, () => logger.isTraceEnabled(), logger.trace)
 
   /**
     * Logs a message with the `TRACE` level.
@@ -46,7 +46,7 @@ case class AppLogger(logger: Slf4jLogger) extends AnyVal {
     */
   def trace(message: => String, error: => Throwable, specificMetadata: Map[String, String] = NoMetadata)
            (implicit c: Correlation): Unit =
-    common(c, message, error, specificMetadata, logger.isTraceEnabled, logger.trace)
+    common(c, message, error, specificMetadata, () => logger.isTraceEnabled(), logger.trace)
 
   /**
     * Logs a message with the `DEBUG` level.
@@ -63,7 +63,7 @@ case class AppLogger(logger: Slf4jLogger) extends AnyVal {
     * @param specificMetadata log in a structured way
     */
   def debug(message: => String, specificMetadata: Map[String, String])(implicit c: Correlation): Unit =
-    common(c, message, specificMetadata, logger.isDebugEnabled, logger.debug)
+    common(c, message, specificMetadata, () => logger.isDebugEnabled(), logger.debug)
 
   /**
     * Logs a message with the `DEBUG` level.
@@ -74,7 +74,7 @@ case class AppLogger(logger: Slf4jLogger) extends AnyVal {
     */
   def debug(message: => String, error: => Throwable, specificMetadata: Map[String, String] = NoMetadata)
            (implicit c: Correlation): Unit =
-    common(c, message, error, specificMetadata, logger.isDebugEnabled, logger.debug)
+    common(c, message, error, specificMetadata, () => logger.isDebugEnabled(), logger.debug)
 
   /**
     * Logs a message with the `INFO` level.
@@ -91,7 +91,7 @@ case class AppLogger(logger: Slf4jLogger) extends AnyVal {
     * @param specificMetadata log in a structured way
     */
   def info(message: => String, specificMetadata: Map[String, String])(implicit c: Correlation): Unit =
-    common(c, message, specificMetadata, logger.isInfoEnabled, logger.info)
+    common(c, message, specificMetadata, () => logger.isInfoEnabled(), logger.info)
 
   /**
     * Logs a message with the `INFO` level.
@@ -102,7 +102,7 @@ case class AppLogger(logger: Slf4jLogger) extends AnyVal {
     */
   def info(message: => String, error: => Throwable, specificMetadata: Map[String, String] = NoMetadata)
           (implicit c: Correlation): Unit =
-    common(c, message, error, specificMetadata, logger.isInfoEnabled, logger.info)
+    common(c, message, error, specificMetadata, () => logger.isInfoEnabled(), logger.info)
 
   /**
     * Logs a message with the `WARN` level.
@@ -119,7 +119,7 @@ case class AppLogger(logger: Slf4jLogger) extends AnyVal {
     * @param specificMetadata log in a structured way
     */
   def warn(message: => String, specificMetadata: Map[String, String])(implicit c: Correlation): Unit =
-    common(c, message, specificMetadata, logger.isWarnEnabled, logger.warn)
+    common(c, message, specificMetadata, () => logger.isWarnEnabled(), logger.warn)
 
   /**
     * Logs a message with the `WARN` level.
@@ -130,7 +130,7 @@ case class AppLogger(logger: Slf4jLogger) extends AnyVal {
     */
   def warn(message: => String, error: => Throwable, specificMetadata: Map[String, String] = NoMetadata)
           (implicit c: Correlation): Unit =
-    common(c, message, error, specificMetadata, logger.isWarnEnabled, logger.warn)
+    common(c, message, error, specificMetadata, () => logger.isWarnEnabled(), logger.warn)
 
   /**
     * Logs a message with the `ERROR` level.
@@ -147,7 +147,7 @@ case class AppLogger(logger: Slf4jLogger) extends AnyVal {
     * @param specificMetadata log in a structured way
     */
   def error(message: => String, specificMetadata: Map[String, String])(implicit c: Correlation): Unit =
-    common(c, message, specificMetadata, logger.isErrorEnabled, logger.error)
+    common(c, message, specificMetadata, () => logger.isErrorEnabled(), logger.error)
 
   /**
     * Logs a message with the `ERROR` level.
@@ -158,7 +158,7 @@ case class AppLogger(logger: Slf4jLogger) extends AnyVal {
     */
   def error(message: => String, error: => Throwable, specificMetadata: Map[String, String] = NoMetadata)
            (implicit c: Correlation): Unit =
-    common(c, message, error, specificMetadata, logger.isErrorEnabled, logger.error)
+    common(c, message, error, specificMetadata, () => logger.isErrorEnabled(), logger.error)
 
   private def common(c: => Correlation,
                      message: => String,
