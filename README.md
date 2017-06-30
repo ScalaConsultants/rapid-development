@@ -36,7 +36,7 @@ Play App for rapid development
 
 Project uses PostgreSQL 9.6. In the project's root directory run
 ```
-docker compose up -d
+docker-compose up -d
 ```
 
 ##### Migration using Flyway
