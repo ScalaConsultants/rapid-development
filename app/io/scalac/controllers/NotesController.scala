@@ -7,12 +7,11 @@ import scala.concurrent.Future
 import com.google.inject.name.Named
 import com.google.inject.{Inject, Singleton}
 import monix.execution.Scheduler
-import play.api.mvc.{Action, Controller}
+import play.api.mvc.InjectedController
 
 import io.scalac.common.auth
-import io.scalac.common.core.Correlation
 import io.scalac.common.logger.Logging
-import io.scalac.common.play.{GenericResponse, PaginatedResponse, Pagination}
+import io.scalac.common.play.{GenericResponse, PaginatedResponse, Pagination, RequestAttributes}
 import io.scalac.common.services.{InvalidResource, MissingResource, ServiceProfiler}
 import io.scalac.services.{IncomingNote, NotesService, UpdateNote}
 
@@ -21,14 +20,14 @@ class NotesController @Inject()(
   notesService: NotesService,
   @Named("DefaultScheduler") implicit val scheduler: Scheduler,
   implicit val profiler: ServiceProfiler
-) extends Controller with Logging {
+) extends InjectedController with Logging {
 
   import Serializers._
   import io.scalac.common.play.serializers.Serializers._
 
-  def all(limit: Int, offset: Int) = Action.async { request =>
+  def all(limit: Int, offset: Int) = Action.async(parse.default) { request =>
     implicit val emptyContext = auth.EmptyContext()
-    implicit val cid = Correlation.getCorrelation(request.headers.toSimpleMap)
+    implicit val c = request.attrs(RequestAttributes.Correlation)
     logger.info(s"${request.path}")
     val pagination = Pagination(limit = limit, offset = offset)
     notesService.list(pagination).runAsync.map {
@@ -49,9 +48,9 @@ class NotesController @Inject()(
     }
   }
 
-  def find(noteId: UUID) = Action.async { request =>
+  def find(noteId: UUID) = Action.async(parse.default) { request =>
     implicit val emptyContext = auth.EmptyContext()
-    implicit val cid = Correlation.getCorrelation(request.headers.toSimpleMap)
+    implicit val c = request.attrs(RequestAttributes.Correlation)
     logger.info(s"${request.path}")
     notesService.find(noteId).runAsync.map {
       _.fold(
@@ -73,7 +72,7 @@ class NotesController @Inject()(
 
   def update(noteId: UUID) = Action.async(parse.json) { request =>
     implicit val emptyContext = auth.EmptyContext()
-    implicit val cid = Correlation.getCorrelation(request.headers.toSimpleMap)
+    implicit val c = request.attrs(RequestAttributes.Correlation)
     logger.info(s"${request.path}")
     request.body.validate[IncomingNote].fold(
       invalid => Future.successful(BadRequest(GenericResponse(s"Invalid body: ${invalid.mkString("\n")}").asJson)),
@@ -104,7 +103,7 @@ class NotesController @Inject()(
 
   def create() = Action.async(parse.json) { request =>
     implicit val emptyContext = auth.EmptyContext()
-    implicit val cid = Correlation.getCorrelation(request.headers.toSimpleMap)
+    implicit val c = request.attrs(RequestAttributes.Correlation)
     logger.info(s"${request.path}")
     request.body.validate[IncomingNote].fold(
       invalid => Future.successful(BadRequest(GenericResponse(s"Invalid body: ${invalid.mkString(" ")}").asJson)),

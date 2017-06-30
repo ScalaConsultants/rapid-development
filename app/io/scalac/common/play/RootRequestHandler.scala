@@ -2,6 +2,7 @@ package io.scalac.common.play
 
 import com.google.inject.{Inject, Singleton}
 import play.api.http._
+import play.api.libs.typedmap.TypedKey
 import play.api.mvc.{Handler, RequestHeader}
 import play.api.routing.Router
 
@@ -20,10 +21,11 @@ class RootRequestHandler @Inject()
   }
 
   private def addCorrelation(request: RequestHeader) = {
-    //TODO with Play 2.6 use Attr
     val correlation = Correlation.getCorrelation(request.headers.toSimpleMap)
-    request.copy(tags = request.tags + (
-      Correlation.HeaderCorrelationId -> correlation.correlationId.id,
-      Correlation.HeaderUserId -> correlation.userId.fold("")(_.id)))
+    request.addAttr(RequestAttributes.Correlation, correlation)
   }
+}
+
+object RequestAttributes {
+  val Correlation: TypedKey[Correlation] = TypedKey[Correlation]
 }

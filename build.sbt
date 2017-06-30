@@ -1,7 +1,7 @@
 name := """rapid-development"""
 
 version := "1.0-SNAPSHOT"
-scalaVersion := "2.11.11"
+scalaVersion := "2.12.2"
 
 packageName in Universal := "rapid-development"
 sources in (Compile, doc) := Seq.empty
@@ -15,8 +15,11 @@ lazy val root = (project in file("."))
   }
 
 libraryDependencies ++= Seq(
-  cache,//?
+  ehcache,//?
   ws,
+  guice,
+  "com.typesafe.play" %% "play-json" % "2.6.0",
+
   "com.github.pureconfig" %% "pureconfig" % "0.7.0",
   "org.typelevel" %% "cats" % "0.9.0",
   "io.monix" %% "monix" % Versions.monix,
@@ -31,7 +34,7 @@ libraryDependencies ++= Seq(
   "com.github.tminglei" %% "slick-pg_play-json" % Versions.slickPg,
 
   "org.scalatest" %% "scalatest" % "3.0.1" % Test,
-  "org.scalatestplus.play" %% "scalatestplus-play" % "2.0.0" % Test
+  "org.scalatestplus.play" %% "scalatestplus-play" % "3.0.0" % Test
 )
 
 scalacOptions ++= Seq("-feature", "-Xfatal-warnings", "-deprecation", "-unchecked")

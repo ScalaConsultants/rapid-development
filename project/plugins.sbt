@@ -1,7 +1,7 @@
 // The Play plugin
 resolvers += "Flyway" at "https://flywaydb.org/repo"
 
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.15")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.0")
 
 addSbtPlugin("org.flywaydb" % "flyway-sbt" % "4.2.0")
 
@@ -16,7 +16,7 @@ addSbtPlugin("org.flywaydb" % "flyway-sbt" % "4.2.0")
 
 //addSbtPlugin("com.typesafe.sbt" % "sbt-rjs" % "1.0.8")
 
-addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.1")
+addSbtPlugin("com.typesafe.sbt" % "sbt-digest" % "1.1.2")
 
 //addSbtPlugin("com.typesafe.sbt" % "sbt-mocha" % "1.1.0")
 
