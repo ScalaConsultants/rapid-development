@@ -22,6 +22,7 @@ class SlickNotesDao (
 ) extends NotesDao {
 
   import dbExecutor._
+  implicit val ec = dbExecutor.scheduler
 
   override def findAll(): DatabaseResponse[Seq[Note]] =
     notesRepo.findAll()

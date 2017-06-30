@@ -12,7 +12,7 @@ import scala.language.implicitConversions
 
 class DBExecutor (
   dbConfig: DatabaseConfig[PostgresJdbcProfile],
-  scheduler: Scheduler) {
+  val scheduler: Scheduler) {
 
   /**
     * Invokes Slick's DB call. Changes Future into Monix's task and uses
