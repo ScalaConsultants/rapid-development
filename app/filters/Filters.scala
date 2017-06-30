@@ -1,4 +1,5 @@
-import filters.ExampleFilter
+package filters
+
 import play.api._
 import play.api.http.HttpFilters
 
@@ -7,7 +8,7 @@ import play.api.http.HttpFilters
  * class is queried by Play to get a list of filters.
  *
  * Play will automatically use filters from any class called
- * `Filters` that is placed the root package. You can load filters
+ * `filters.Filters` that is placed the root package. You can load filters
  * from a different class by adding a `play.http.filters` setting to
  * the `application.conf` configuration file.
  *

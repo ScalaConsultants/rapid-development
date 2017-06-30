@@ -1,10 +1,11 @@
 package io.scalac.bootstrap
 
 import com.typesafe.config.ConfigFactory
+import filters.{ExampleFilter, Filters}
 import io.scalac.common.controllers.HealthCheckController
 import io.scalac.common.core.Correlation
 import io.scalac.common.logger.Logging
-import io.scalac.common.play.RootHttpErrorHandler
+import io.scalac.common.play.{RootHttpErrorHandler, RootRequestHandler}
 import io.scalac.common.services.{DatabaseHealthCheck, ExternalHealthChecks, HealthCheckServicesImpl, NoopServiceProfiler}
 import io.scalac.controllers.NotesController
 import io.scalac.domain.PostgresJdbcProfile
@@ -15,9 +16,10 @@ import monix.execution.Scheduler
 import monix.execution.schedulers.SchedulerService
 import play.api.ApplicationLoader.Context
 import play.api._
+import play.api.http.HttpRequestHandler
 import play.api.inject.ApplicationLifecycle
+import play.api.routing.Router
 import play.filters.HttpFiltersComponents
-import router.Routes
 import slick.basic.DatabaseConfig
 
 import scala.concurrent.Future
@@ -62,7 +64,14 @@ class MyComponents(context: Context)
     new NotesController(notesService, defaultScheduler)
   }
 
-  lazy val router: Routes = new Routes(httpErrorHandler, assets, healthCheckController, notesController)
+  lazy val router: Router = {
+    new _root_.router.Routes(httpErrorHandler, assets, healthCheckController, notesController)
+  }
+
+  override lazy val httpRequestHandler: HttpRequestHandler = {
+    val filters = new Filters(environment, new ExampleFilter)
+    new RootRequestHandler(httpErrorHandler, httpConfiguration, filters, router)
+  }
 
   private def providePostgresDatabaseProfile(lifecycle: ApplicationLifecycle,
                                      scheduler: Scheduler): DatabaseConfig[PostgresJdbcProfile] = {
