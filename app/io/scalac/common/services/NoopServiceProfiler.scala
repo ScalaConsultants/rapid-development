@@ -1,9 +1,6 @@
 package io.scalac.common.services
 
-import com.google.inject.Singleton
-
-@Singleton
-class NoopServiceProfiler extends ServiceProfiler {
+object NoopServiceProfiler extends ServiceProfiler {
 
   override def incrementCounter(identifier: String): Unit = ()
 

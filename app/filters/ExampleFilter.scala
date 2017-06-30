@@ -1,14 +1,11 @@
 package filters
 
-import javax.inject._
-
-import scala.concurrent.{ExecutionContext, Future}
-
 import akka.stream.Materializer
 import play.api.mvc._
 
-@Singleton
-class ExampleFilter @Inject()(
+import scala.concurrent.{ExecutionContext, Future}
+
+class ExampleFilter (
     implicit override val mat: Materializer,
     exec: ExecutionContext) extends Filter {
 

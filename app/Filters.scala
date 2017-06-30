@@ -1,5 +1,3 @@
-import javax.inject._
-
 import filters.ExampleFilter
 import play.api._
 import play.api.http.HttpFilters
@@ -17,8 +15,7 @@ import play.api.http.HttpFilters
  * @param exampleFilter A demonstration filter that adds a header to
  * each response.
  */
-@Singleton
-class Filters @Inject() (
+class Filters (
   env: Environment,
   exampleFilter: ExampleFilter) extends HttpFilters {
 

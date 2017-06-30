@@ -3,15 +3,12 @@ package io.scalac.common.services
 import java.net.InetAddress
 
 import cats.syntax.either._
-import com.google.inject.name.Named
-import com.google.inject.{Inject, Singleton}
 import com.typesafe.config.Config
 import monix.eval.Task
 
-@Singleton
-class HealthCheckServicesImpl @Inject()(
+class HealthCheckServicesImpl (
   externalHealthChecks: ExternalHealthChecks,
-  @Named("BuildInfo") config: Config
+  config: Config
 ) extends HealthCheckServices {
 
   override val healthCheck: Service[HealthCheckRequest, HealthCheckResponse, ServiceError] =

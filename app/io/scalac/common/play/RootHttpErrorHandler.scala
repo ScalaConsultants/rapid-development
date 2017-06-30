@@ -3,7 +3,6 @@ package io.scalac.common.play
 import javax.inject._
 
 import scala.concurrent._
-
 import org.slf4j.MarkerFactory
 import play.api._
 import play.api.http.DefaultHttpErrorHandler
@@ -11,16 +10,15 @@ import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.mvc._
 import play.api.routing.Router
-
 import io.scalac.common.core.Correlation
 import io.scalac.common.logger.Logging
+import play.core.SourceMapper
 
-@Singleton
-class RootHttpErrorHandler @Inject()(
+class RootHttpErrorHandler(
   env: Environment,
   config: Configuration,
-  sourceMapper: OptionalSourceMapper,
-  router: Provider[Router]
+  sourceMapper: Option[SourceMapper],
+  router: Option[Router]
 )(implicit executionContext: ExecutionContext)
   extends DefaultHttpErrorHandler(env, config, sourceMapper, router)
     with InstrumentedErrorHandler

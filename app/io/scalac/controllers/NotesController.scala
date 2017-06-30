@@ -2,28 +2,26 @@ package io.scalac.controllers
 
 import java.util.UUID
 
-import scala.concurrent.Future
-
-import com.google.inject.name.Named
-import com.google.inject.{Inject, Singleton}
-import monix.execution.Scheduler
-import play.api.mvc.InjectedController
-
 import io.scalac.common.auth
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.{GenericResponse, PaginatedResponse, Pagination, RequestAttributes}
 import io.scalac.common.services.{InvalidResource, MissingResource, ServiceProfiler}
 import io.scalac.services.{IncomingNote, NotesService, UpdateNote}
+import monix.execution.Scheduler
+import play.api.mvc.InjectedController
 
-@Singleton
-class NotesController @Inject()(
+import scala.concurrent.Future
+
+class NotesController (
   notesService: NotesService,
-  @Named("DefaultScheduler") implicit val scheduler: Scheduler,
-  implicit val profiler: ServiceProfiler
-) extends InjectedController with Logging {
+  scheduler: Scheduler)
+  (implicit profiler: ServiceProfiler)
+  extends InjectedController with Logging {
 
   import Serializers._
   import io.scalac.common.play.serializers.Serializers._
+
+  private implicit val schedulerImpl = scheduler
 
   def all(limit: Int, offset: Int) = Action.async(parse.default) { request =>
     implicit val emptyContext = auth.EmptyContext()

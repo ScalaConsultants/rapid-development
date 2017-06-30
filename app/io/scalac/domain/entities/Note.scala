@@ -4,13 +4,11 @@ import java.util.UUID
 
 import com.byteslounge.slickrepo.meta.{Versioned, VersionedEntity}
 import com.byteslounge.slickrepo.repository.VersionedRepository
-import com.google.inject.{Inject, Singleton}
+import io.scalac.common.play.Pagination
+import io.scalac.domain.PostgresJdbcProfile
 import org.joda.time.DateTime
 import slick.ast.BaseTypedType
 import slick.basic.DatabaseConfig
-
-import io.scalac.common.play.Pagination
-import io.scalac.domain.PostgresJdbcProfile
 
 final case class Note(
   override val id: Option[UUID],
@@ -28,8 +26,7 @@ final case class Note(
     this.copy(creator = creator, note = note, updatedAt = DateTime.now())
 }
 
-@Singleton
-class NotesSlickPostgresRepository @Inject() (
+class NotesSlickPostgresRepository (
   val dbConfig: DatabaseConfig[PostgresJdbcProfile]//TODO or JdbcProfile and import PostgresJdbcProfile.api._ below? Safe?
 ) extends VersionedRepository[Note, UUID, Int](dbConfig.profile) {
 

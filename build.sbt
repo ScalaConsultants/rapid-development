@@ -17,7 +17,6 @@ lazy val root = (project in file("."))
 libraryDependencies ++= Seq(
   ehcache,//?
   ws,
-  guice,
   "com.typesafe.play" %% "play-json" % "2.6.0",
 
   "com.github.pureconfig" %% "pureconfig" % "0.7.2",

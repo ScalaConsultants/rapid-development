@@ -1,15 +1,12 @@
 package io.scalac.common.play
 
-import com.google.inject.{Inject, Singleton}
+import io.scalac.common.core.Correlation
 import play.api.http._
 import play.api.libs.typedmap.TypedKey
 import play.api.mvc.{Handler, RequestHeader}
 import play.api.routing.Router
 
-import io.scalac.common.core.Correlation
-
-@Singleton
-class RootRequestHandler @Inject()
+class RootRequestHandler
 (errorHandler: HttpErrorHandler,
  configuration: HttpConfiguration,
  filters: HttpFilters,

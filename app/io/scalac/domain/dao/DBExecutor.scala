@@ -1,23 +1,18 @@
 package io.scalac.domain.dao
 
-import scala.language.implicitConversions
-
 import cats.syntax.either._
-import com.google.inject.Inject
-import com.google.inject.name.Named
+import io.scalac.common.services.{DatabaseCallFailed, DatabaseError, DatabaseResponse}
+import io.scalac.domain.PostgresJdbcProfile
 import monix.eval.Task
 import monix.execution.Scheduler
 import slick.basic.DatabaseConfig
 import slick.dbio.DBIO
 
-import io.scalac.common.services.{DatabaseResponse, DatabaseCallFailed, DatabaseError}
-import io.scalac.domain.PostgresJdbcProfile
+import scala.language.implicitConversions
 
-class DBImplicits @Inject()(
+class DBExecutor (
   dbConfig: DatabaseConfig[PostgresJdbcProfile],
-  @Named("DatabaseScheduler") scheduler: Scheduler) {
-
-  implicit val dbEx = scheduler
+  scheduler: Scheduler) {
 
   /**
     * Invokes Slick's DB call. Changes Future into Monix's task and uses
@@ -25,7 +20,7 @@ class DBImplicits @Inject()(
     * to <i>global</i> execution context.
     */
   implicit def executeOperation[T](databaseOperation: DBIO[T]): DatabaseResponse[T] = {
-    Task.fork(Task.fromFuture(dbConfig.db.run(databaseOperation)), dbEx)
+    Task.fork(Task.fromFuture(dbConfig.db.run(databaseOperation)), scheduler)
       .map(_.asRight[DatabaseError])
       .asyncBoundary
       .onErrorHandle { ex =>
