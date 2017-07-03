@@ -10,7 +10,7 @@ import org.joda.time.DateTime
 import io.scalac.common.BaseUnitTest
 import io.scalac.common.adapters.NotesDaoAdapter
 import io.scalac.common.play.Pagination
-import io.scalac.common.services.{DatabaseCallFailed, DatabaseResponse, ServiceFailed}
+import io.scalac.common.services.{DatabaseCallFailed, DatabaseResponse, InvalidResource, ServiceFailed}
 import io.scalac.domain.entities.Note
 
 class NotesServicesSpecs extends BaseUnitTest {
@@ -87,6 +87,58 @@ class NotesServicesSpecs extends BaseUnitTest {
         }
 
         val response = notesService.list(pagination).runAsync.block
+        response.isLeft shouldBe true
+        response shouldBe ServiceFailed("BOOM").asLeft
+      }
+    }
+  }
+
+  "NotesService.create" should {
+    "create note successfully" when {
+      "valid note is provided" in new Fixture {
+        override def notesDao: NotesDaoAdapter = new NotesDaoAdapter() {
+          override def create(note: Note): DatabaseResponse[UUID] =
+            Task.now(uuid.asRight)
+        }
+
+        val newNote = IncomingNote(note.creator, note.note)
+
+        val response = notesService.create(newNote).runAsync.block
+        response.isRight shouldBe true
+        response shouldBe uuid.asRight
+      }
+    }
+
+    "return failed response and not create a note" when {
+
+      "provided note has too short creator field" in new Fixture {
+        override def notesDao: NotesDaoAdapter = new NotesDaoAdapter()
+
+        val newNote = IncomingNote("A", note.note)
+
+        val response = notesService.create(newNote).runAsync.block
+        response.isLeft shouldBe true
+        response shouldBe InvalidResource(Seq("creator's length must be between 3 and 100 characters")).asLeft
+      }
+
+      "provided note has too short note field" in new Fixture {
+        override def notesDao: NotesDaoAdapter = new NotesDaoAdapter()
+
+        val newNote = IncomingNote(note.creator, "")
+
+        val response = notesService.create(newNote).runAsync.block
+        response.isLeft shouldBe true
+        response shouldBe InvalidResource(Seq("note's length must be between 1 and 5000 characters")).asLeft
+      }
+
+      "db returns an error" in new Fixture {
+        override def notesDao: NotesDaoAdapter = new NotesDaoAdapter() {
+          override def create(note: Note): DatabaseResponse[UUID] =
+            Task.now(DatabaseCallFailed("BOOM").asLeft)
+        }
+        val newNote = IncomingNote(note.creator, note.note)
+
+        val response = notesService.create(newNote).runAsync.block
         response.isLeft shouldBe true
         response shouldBe ServiceFailed("BOOM").asLeft
       }
