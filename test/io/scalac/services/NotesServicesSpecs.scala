@@ -2,13 +2,14 @@ package io.scalac.services
 
 import java.util.UUID
 
-import monix.eval.Task
 import cats.syntax.either._
+import cats.syntax.option._
+import monix.eval.Task
 import org.joda.time.DateTime
 
 import io.scalac.common.BaseUnitTest
 import io.scalac.common.adapters.NotesDaoAdapter
-import io.scalac.common.services.{DatabaseCallFailed, DatabaseResponse, NoopServiceProfiler, ServiceFailed}
+import io.scalac.common.services.{DatabaseCallFailed, DatabaseResponse, ServiceFailed}
 import io.scalac.domain.entities.Note
 
 class NotesServicesSpecs extends BaseUnitTest {
@@ -18,23 +19,23 @@ class NotesServicesSpecs extends BaseUnitTest {
       "no note has been found for given id" in new Fixture {
         override def notesDao: NotesDaoAdapter = new NotesDaoAdapter() {
           override def find(noteId: UUID): DatabaseResponse[Option[Note]] =
-            Task.now(None.asRight)
+            Task.now(none.asRight)
         }
 
         val response = notesService.find(uuid).runAsync.block
         response.isRight shouldBe true
-        response shouldBe None.asRight
+        response shouldBe none.asRight
       }
 
       "a note has been found for given id" in new Fixture {
         override def notesDao: NotesDaoAdapter = new NotesDaoAdapter() {
           override def find(noteId: UUID): DatabaseResponse[Option[Note]] =
-            Task.now(Some(note).asRight)
+            Task.now(note.some.asRight)
         }
 
         val response = notesService.find(uuid).runAsync.block
         response.isRight shouldBe true
-        response shouldBe note.asRight
+        response shouldBe outgoingNote.some.asRight
       }
     }
 
@@ -56,10 +57,11 @@ class NotesServicesSpecs extends BaseUnitTest {
   trait Fixture {
     val uuid = UUID.randomUUID()
     val note = Note(Some(uuid), "creator", "some not so long note", DateTime.now(), DateTime.now(), Some(1))
+    val outgoingNote = OutgoingNote(note.id.get, note.creator, note.note, note.updatedAt)
 
     def notesDao: NotesDaoAdapter
 
-    val notesService = new DefaultNotesService(notesDao, new NoopServiceProfiler())
+    val notesService = new DefaultNotesService(notesDao)
   }
 }
 
