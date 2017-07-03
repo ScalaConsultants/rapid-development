@@ -9,6 +9,7 @@ import org.joda.time.DateTime
 
 import io.scalac.common.BaseUnitTest
 import io.scalac.common.adapters.NotesDaoAdapter
+import io.scalac.common.play.Pagination
 import io.scalac.common.services.{DatabaseCallFailed, DatabaseResponse, ServiceFailed}
 import io.scalac.domain.entities.Note
 
@@ -53,11 +54,50 @@ class NotesServicesSpecs extends BaseUnitTest {
     }
   }
 
+  "NotesService.list" should {
+    "return successful response" when {
+      "no notes have been found for given id" in new Fixture {
+        override def notesDao: NotesDaoAdapter = new NotesDaoAdapter() {
+          override def listAll(pagination: Pagination): DatabaseResponse[Seq[Note]] =
+            Task.now(Seq.empty.asRight)
+        }
+
+        val response = notesService.list(pagination).runAsync.block
+        response.isRight shouldBe true
+        response shouldBe Seq.empty.asRight
+      }
+
+      "notes have been found for given id" in new Fixture {
+        override def notesDao: NotesDaoAdapter = new NotesDaoAdapter() {
+          override def listAll(pagination: Pagination): DatabaseResponse[Seq[Note]] =
+            Task.now(Seq(note).asRight)
+        }
+
+        val response = notesService.list(pagination).runAsync.block
+        response.isRight shouldBe true
+        response shouldBe Seq(outgoingNote).asRight
+      }
+    }
+
+    "return failed response" when {
+      "db returns an error" in new Fixture {
+        override def notesDao: NotesDaoAdapter = new NotesDaoAdapter() {
+          override def listAll(pagination: Pagination): DatabaseResponse[Seq[Note]] =
+            Task.now(DatabaseCallFailed("BOOM").asLeft)
+        }
+
+        val response = notesService.list(pagination).runAsync.block
+        response.isLeft shouldBe true
+        response shouldBe ServiceFailed("BOOM").asLeft
+      }
+    }
+  }
 
   trait Fixture {
     val uuid = UUID.randomUUID()
     val note = Note(Some(uuid), "creator", "some not so long note", DateTime.now(), DateTime.now(), Some(1))
     val outgoingNote = OutgoingNote(note.id.get, note.creator, note.note, note.updatedAt)
+    val pagination = Pagination(limit = 10, offset = 0)
 
     def notesDao: NotesDaoAdapter
 
