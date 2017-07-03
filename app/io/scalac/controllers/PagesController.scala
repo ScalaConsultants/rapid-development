@@ -1,9 +1,7 @@
 package io.scalac.controllers
 
-import com.google.inject.name.Named
-import com.google.inject.{Inject, Singleton}
 import monix.execution.Scheduler
-import play.api.mvc.InjectedController
+import play.api.mvc.{AbstractController, ControllerComponents}
 
 import io.scalac.common.auth
 import io.scalac.common.logger.Logging
@@ -11,12 +9,13 @@ import io.scalac.common.play.{GenericResponse, PaginatedResponse, Pagination, Re
 import io.scalac.common.services.ServiceProfiler
 import io.scalac.services.NotesService
 
-@Singleton
-class PagesController @Inject()(
+class PagesController (
   notesService: NotesService,
-  @Named("DefaultScheduler") implicit val scheduler: Scheduler,
-  implicit val profiler: ServiceProfiler
-) extends InjectedController with Logging {
+  scheduler: Scheduler
+)(implicit profiler: ServiceProfiler, controllerComponents: ControllerComponents)
+  extends AbstractController(controllerComponents) with Logging {
+
+  private implicit val schedulerImpl = scheduler
 
   def index() = Action.async(parse.default) { request =>
     implicit val emptyContext = auth.EmptyContext()
