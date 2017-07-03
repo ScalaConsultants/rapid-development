@@ -26,13 +26,13 @@ class RootHttpErrorHandler(
 
   override implicit val ec: ExecutionContext = executionContext
 
-  override protected def onDevServerError(request: RequestHeader, e: UsefulException): Future[Result] =
+  override protected def onDevServerError(request: RequestHeader, e: UsefulException): Future[Result] = {
     Future.successful(InternalServerError(Json.obj(
       "error" -> Json.obj("message" -> e.getMessage, "errorId" -> e.id))))
+  }
 
   override def onProdServerError(request: RequestHeader, e: UsefulException): Future[Result] =
-    Future.successful(InternalServerError(Json.obj(
-      "error" -> Json.obj("message" -> "Internal error", "errorId" -> e.id))))
+    Future.successful(InternalServerError(views.html.serverError(GenericResponse("Please check logs"))))
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] =
     Future.successful(new Status(statusCode))

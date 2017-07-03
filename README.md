@@ -22,7 +22,7 @@ Play App for rapid development
 - [ ] Swagger specification for dummy resource
 - [x] migration to Play 2.6
 - [ ] tests
-- [ ] static views
+- [x] static views
 - [ ] versioned endpoints - path or header negotiation?
 - [ ] CRSF?
 - [ ] SSL?

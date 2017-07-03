@@ -2,12 +2,13 @@ package io.scalac.bootstrap
 
 import com.typesafe.config.ConfigFactory
 import filters.{ExampleFilter, Filters}
+
 import io.scalac.common.controllers.HealthCheckController
 import io.scalac.common.core.Correlation
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.{RootHttpErrorHandler, RootRequestHandler}
 import io.scalac.common.services.{DatabaseHealthCheck, HealthCheckServicesImpl, NoopServiceProfiler}
-import io.scalac.controllers.NotesController
+import io.scalac.controllers.{NotesController, PagesController}
 import io.scalac.domain.PostgresJdbcProfile
 import io.scalac.domain.dao.{DBExecutor, SlickNotesDao}
 import io.scalac.domain.entities.NotesSlickPostgresRepository
@@ -16,13 +17,12 @@ import monix.execution.Scheduler
 import monix.execution.schedulers.SchedulerService
 import play.api.ApplicationLoader.Context
 import play.api._
-import play.api.http.HttpRequestHandler
+import play.api.http.{HttpErrorHandler, HttpRequestHandler}
 import play.api.inject.ApplicationLifecycle
 import play.api.mvc.ControllerComponents
 import play.api.routing.Router
 import play.filters.HttpFiltersComponents
 import slick.basic.DatabaseConfig
-
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
@@ -44,12 +44,14 @@ class MyComponents(context: Context)
   val databaseScheduler: SchedulerService = Scheduler.io(name="database")
   implicit val serviceProfiler = NoopServiceProfiler
   val dbConfig = providePostgresDatabaseProfile(applicationLifecycle, databaseScheduler)
+  val dbExecutor = new DBExecutor(dbConfig, databaseScheduler)
 
-  lazy val errorHandler = {
-    new RootHttpErrorHandler(environment, configuration, sourceMapper, None)
-  }
+  val notesRepo = new NotesSlickPostgresRepository(dbConfig)
+  val notesDao = new SlickNotesDao(notesRepo, dbExecutor)
 
-  lazy val healthCheckController = {
+  val notesService = new DefaultNotesService(notesDao)
+
+  val healthCheckController = {
     val dbHealthCheck = new DatabaseHealthCheck(dbConfig)
     val externalHealthChecks = List(dbHealthCheck)
     val config = ConfigFactory.load("build-info")
@@ -58,17 +60,12 @@ class MyComponents(context: Context)
     new HealthCheckController(services, defaultScheduler)
   }
 
-  lazy val notesController = {
-    val notesRepo = new NotesSlickPostgresRepository(dbConfig)
-    val dbExecutor = new DBExecutor(dbConfig, databaseScheduler)
-    val notesDao = new SlickNotesDao(notesRepo, dbExecutor)
-    val notesService = new DefaultNotesService(notesDao)
+  val notesController = new NotesController(notesService, defaultScheduler)
+  val pagesController = new PagesController(notesService, defaultScheduler)
 
-    new NotesController(notesService, defaultScheduler)
-  }
-
-  lazy val router: Router = {
-    new _root_.router.Routes(httpErrorHandler, assets, healthCheckController, notesController)
+  override lazy val httpErrorHandler: HttpErrorHandler = {
+    //router below is used only in dev mode, causes stack overflow for Some(router) anyway
+    new RootHttpErrorHandler(environment, configuration, sourceMapper, router = None)
   }
 
   override lazy val httpRequestHandler: HttpRequestHandler = {
@@ -76,8 +73,17 @@ class MyComponents(context: Context)
     new RootRequestHandler(httpErrorHandler, httpConfiguration, filters, router)
   }
 
+  override lazy val router: Router = {
+    new _root_.router.Routes(
+      httpErrorHandler,
+      assets,
+      healthCheckController,
+      pagesController,
+      notesController)
+  }
+
   private def providePostgresDatabaseProfile(lifecycle: ApplicationLifecycle,
-                                     scheduler: Scheduler): DatabaseConfig[PostgresJdbcProfile] = {
+    scheduler: Scheduler): DatabaseConfig[PostgresJdbcProfile] = {
     implicit val ex = scheduler
 
     val env = Option(System.getProperty("env")).getOrElse("dev")
