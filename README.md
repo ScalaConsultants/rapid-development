@@ -2,12 +2,13 @@ Play App for rapid development
 ==============================
 
 #### Raw facts
+* Java 8 required
 * Scala 2.12.2
-* Play 2.6.0
-* Slick 3.2 (`without PlaySlick extension!`) with help from [pregenerated common repositories calls](https://github.com/gonmarques/slick-repo)
+* Play 2.6.0 with compile time dependency injection
+* Slick 3.2 (`without play-slick extension`) with help from [pregenerated common repository calls](https://github.com/gonmarques/slick-repo)
 * Postgres 9.6.2 with [Slick Postgres extensions](https://github.com/tminglei/slick-pg)
-* Cats
-* Monix
+* Cats 0.9.0
+* Monix 2.3.0
 
 #### Goals
 
@@ -21,7 +22,7 @@ Play App for rapid development
 - [x] CRUD REST API for a dummy resource
 - [ ] Swagger specification for dummy resource
 - [x] migration to Play 2.6
-- [ ] tests
+- [X] tests
 - [x] static views
 - [ ] versioned endpoints - path or header negotiation?
 - [ ] CRSF?
