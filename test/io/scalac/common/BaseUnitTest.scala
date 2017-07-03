@@ -8,6 +8,6 @@ import io.scalac.common.services.NoopServiceProfiler
 trait BaseUnitTest extends WordSpec with Matchers with FuturesSupport {
 
   implicit val serviceContext: auth.ServiceContext = auth.EmptyContext()
-  implicit val serviceProfiler: services.ServiceProfiler = new NoopServiceProfiler()
+  implicit val serviceProfiler: services.ServiceProfiler = NoopServiceProfiler
   implicit val logger: AppLogger = AppLogger(getClass)
 }

@@ -2,8 +2,6 @@ package io.scalac.domain.dao
 
 import java.util.UUID
 
-import com.google.inject.{Inject, Singleton}
-
 import io.scalac.common.play.Pagination
 import io.scalac.common.services.DatabaseResponse
 import io.scalac.domain.entities.{Note, NotesSlickPostgresRepository}
@@ -18,13 +16,13 @@ trait NotesDao {
   def update(note: Note): DatabaseResponse[Note]
 }
 
-@Singleton
-class SlickNotesDao @Inject() (
+class SlickNotesDao (
   notesRepo: NotesSlickPostgresRepository,
-  dBImplicits: DBImplicits
+  dbExecutor: DBExecutor
 ) extends NotesDao {
 
-  import dBImplicits._
+  import dbExecutor._
+  implicit val ec = dbExecutor.scheduler
 
   override def findAll(): DatabaseResponse[Seq[Note]] =
     notesRepo.findAll()

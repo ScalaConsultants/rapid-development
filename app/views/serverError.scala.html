@@ -1,0 +1,28 @@
+@import io.scalac.common.play.GenericResponse
+
+@(serverResponse: GenericResponse)
+
+@innerHtml = {
+  <div class="site-wrapper">
+    <div class="site-wrapper-inner">
+      <div class="cover-container">
+        <div class="masthead clearfix">
+          <div class="inner">
+            <h3 class="masthead-brand">Rapid development FTW!</h3>
+          </div>
+        </div>
+        <div class="inner cover">
+          <h1 class="cover-heading">Boom under the hood!</h1>
+          <p class="lead">@serverResponse.message</p>
+        </div>
+        <div class="mastfoot">
+          <div class="inner">
+            <p>Cover template for <a href="http://getbootstrap.com">Bootstrap</a>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@main(innerHtml)
