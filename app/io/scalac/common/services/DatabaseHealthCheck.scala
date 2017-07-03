@@ -1,13 +1,10 @@
 package io.scalac.common.services
 
-import com.google.inject.{Inject, Singleton}
+import io.scalac.domain.PostgresJdbcProfile
 import monix.eval.Task
 import slick.basic.DatabaseConfig
 
-import io.scalac.domain.PostgresJdbcProfile
-
-@Singleton
-class DatabaseHealthCheck @Inject() (dbConfig: DatabaseConfig[PostgresJdbcProfile]) extends ExternalHealthCheck {
+class DatabaseHealthCheck (dbConfig: DatabaseConfig[PostgresJdbcProfile]) extends ExternalHealthCheck {
 
   override def apply(): Task[ExternalHealthCheckResponse] = {
     Task {

@@ -3,15 +3,12 @@ package io.scalac.common.services
 import java.net.InetAddress
 
 import cats.syntax.either._
-import com.google.inject.name.Named
-import com.google.inject.{Inject, Singleton}
 import com.typesafe.config.Config
 import monix.eval.Task
 
-@Singleton
-class HealthCheckServicesImpl @Inject()(
-  externalHealthChecks: ExternalHealthChecks,
-  @Named("BuildInfo") config: Config
+class HealthCheckServicesImpl (
+  externalHealthChecks: Seq[ExternalHealthCheck],
+  config: Config
 ) extends HealthCheckServices {
 
   override val healthCheck: Service[HealthCheckRequest, HealthCheckResponse, ServiceError] =
@@ -20,7 +17,7 @@ class HealthCheckServicesImpl @Inject()(
 
         val externalResponses: Seq[Task[ExternalHealthCheckResponse]] =
           if (req.diagnostics) {
-            externalHealthChecks.services.map(_.apply())
+            externalHealthChecks.map(_.apply())
           } else Seq()
         Task.sequence(externalResponses).map { externalResponses =>
           val success = externalResponses.forall(_.success)

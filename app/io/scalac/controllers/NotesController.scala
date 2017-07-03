@@ -2,28 +2,26 @@ package io.scalac.controllers
 
 import java.util.UUID
 
-import scala.concurrent.Future
-
-import com.google.inject.name.Named
-import com.google.inject.{Inject, Singleton}
-import monix.execution.Scheduler
-import play.api.mvc.InjectedController
-
 import io.scalac.common.auth
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.{GenericResponse, PaginatedResponse, Pagination, RequestAttributes}
 import io.scalac.common.services.{InvalidResource, MissingResource, ServiceProfiler}
 import io.scalac.services.{IncomingNote, NotesService, UpdateNote}
+import monix.execution.Scheduler
+import play.api.mvc.{AbstractController, ControllerComponents}
 
-@Singleton
-class NotesController @Inject()(
+import scala.concurrent.Future
+
+class NotesController (
   notesService: NotesService,
-  @Named("DefaultScheduler") implicit val scheduler: Scheduler,
-  implicit val profiler: ServiceProfiler
-) extends InjectedController with Logging {
+  scheduler: Scheduler)
+  (implicit profiler: ServiceProfiler, controllerComponents: ControllerComponents)
+  extends AbstractController(controllerComponents) with Logging {
 
   import Serializers._
   import io.scalac.common.play.serializers.Serializers._
+
+  private implicit val schedulerImpl = scheduler
 
   def all(limit: Int, offset: Int) = Action.async(parse.default) { request =>
     implicit val emptyContext = auth.EmptyContext()
@@ -75,7 +73,7 @@ class NotesController @Inject()(
     implicit val c = request.attrs(RequestAttributes.Correlation)
     logger.info(s"${request.path}")
     request.body.validate[IncomingNote].fold(
-      invalid => Future.successful(BadRequest(GenericResponse(s"Invalid body: ${invalid.mkString("\n")}").asJson)),
+      invalid => badRequestFuture(s"Invalid body: ${invalid.mkString("\n")}"),
       noteToUpdate => {
         notesService.update(UpdateNote(noteId, noteToUpdate)).runAsync.map {
           _.fold(
@@ -101,19 +99,16 @@ class NotesController @Inject()(
     )
   }
 
-  def create() = Action.async(parse.json) { request =>
+  def create() = Action.async(parse.anyContent) { request =>
     implicit val emptyContext = auth.EmptyContext()
     implicit val c = request.attrs(RequestAttributes.Correlation)
     logger.info(s"${request.path}")
-    request.body.validate[IncomingNote].fold(
-      invalid => Future.successful(BadRequest(GenericResponse(s"Invalid body: ${invalid.mkString(" ")}").asJson)),
+    request.body.asJson.map(_.validate[IncomingNote].fold(
+      invalid => badRequestFuture(s"Invalid body: ${invalid.mkString(" ")}"),
       newNote => {
         notesService.create(newNote).runAsync.map {
           _.fold(
             {
-              case InvalidResource(errors) =>
-                logger.info("Cannot update note with invalid request")
-                BadRequest(GenericResponse(s"Invalid body: ${errors.mkString("\n")}").asJson)
               case serviceError =>
                 val msg = s"Failed due to: $serviceError"
                 logger.error(s"${request.path} - $msg")
@@ -126,7 +121,9 @@ class NotesController @Inject()(
           )
         }
       }
-    )
-
+    )).getOrElse(badRequestFuture("Body is a not a correct JSON"))
   }
+
+  private def badRequestFuture(msg: String) =
+    Future.successful(BadRequest(GenericResponse(msg).asJson))
 }

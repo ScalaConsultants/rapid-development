@@ -3,10 +3,6 @@ package io.scalac.services
 import java.util.UUID
 
 import cats.syntax.either._
-import com.google.inject.{Inject, Singleton}
-import monix.cats.monixToCatsMonad
-import org.joda.time.DateTime
-
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.Pagination
 import io.scalac.common.services._
@@ -14,6 +10,8 @@ import io.scalac.common.syntax._
 import io.scalac.domain.dao.NotesDao
 import io.scalac.domain.entities.Note
 import io.scalac.services.ValidatedUtils._
+import monix.cats.monixToCatsMonad
+import org.joda.time.DateTime
 
 trait NotesService {
 
@@ -24,11 +22,9 @@ trait NotesService {
   def update: Service[UpdateNote, OutgoingNote, ServiceError]
 }
 
-@Singleton
-class DefaultNotesService @Inject()(
-  notesDao: NotesDao,
-  implicit val profiler: ServiceProfiler
-) extends NotesService with Logging {
+class DefaultNotesService (
+    notesDao: NotesDao)(implicit val profiler: ServiceProfiler)
+  extends NotesService with Logging {
 
   override def findAll(): ServiceResponse[Seq[OutgoingNote]] = {
     //TODO what to do with db message? Map to Service message or just pass through?
