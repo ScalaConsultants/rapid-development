@@ -24,11 +24,15 @@ Play App for rapid development
 - [x] migration to Play 2.6
 - [X] tests
 - [x] static views
-- [ ] versioned endpoints - path or header negotiation?
-- [ ] CRSF?
-- [ ] SSL?
+- [ ] split project into core and web modules
+- [ ] example of versioned endpoints - path or header negotiation?
+- [ ] CRSF
+- [ ] SSL
 - [ ] base authentication with lib like https://github.com/mohiva/play-silhouette
 - [ ] 3rdParty service call with build in timeout and circuit breaker
+- [ ] update README with information where are defined useful utils and implicit transformations
+- [ ] clear all code TODOs
+- [ ] make public and private healtcheck endpoint (based on existing `/healthcheck`)
 
 
 ### Database for local development
