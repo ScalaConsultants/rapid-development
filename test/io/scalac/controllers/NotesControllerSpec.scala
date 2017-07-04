@@ -8,22 +8,160 @@ import monix.eval.Task
 import org.scalatest.BeforeAndAfterAll
 import play.api.libs.json._
 import play.api.test.Helpers.{status, _}
-import play.api.test.{FakeRequest, StubControllerComponentsFactory}
-
+import play.api.test.FakeRequest
 import io.scalac.common.BaseUnitTest
 import io.scalac.common.adapters.NotesServiceProto
 import io.scalac.common.core.Correlation
-import io.scalac.common.play.RequestAttributes
-import io.scalac.common.services.{NoopServiceProfiler, Service, ServiceError, ServiceFailed}
+import io.scalac.common.play.{Pagination, RequestAttributes}
+import io.scalac.common.services.{InvalidResource, MissingResource, NoopServiceProfiler, Service, ServiceError, ServiceFailed}
 import io.scalac.services._
+import org.joda.time.DateTime
+import play.api.libs.json
 
-class NotesControllerSpec extends BaseUnitTest with StubControllerComponentsFactory with BeforeAndAfterAll {
+class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
   implicit val system = ActorSystem()
   implicit val mat = ActorMaterializer()
 
   override def afterAll(): Unit = {
     mat.shutdown()
     system.terminate()
+  }
+
+  "NotesController.all" should {
+    val request =
+      FakeRequest(GET, s"/notes")
+        .addAttr(RequestAttributes.Correlation, Correlation("cid"))
+
+    "work" in new Fixture {
+      val itemsNumber = 4
+
+      val service = new NotesServiceProto {
+        override def list: Service[Pagination, Seq[OutgoingNote], ServiceError] = mockService { _ =>
+          Task.now(Right(List.fill(itemsNumber)(outgoingNote)))
+        }
+      }
+
+      val res = controller.all(10, 0).apply(request)
+
+      status(res) should equal (OK)
+      val responseJson = contentAsJson(res).asJsObject
+      responseJson("next").asJsObject.fields.map(_._1).toSet should equal (Set("limit", "offset"))
+      responseJson("sequence").asJsArray.value.size should equal(itemsNumber)
+    }
+  }
+
+  "NotesController.find" should {
+    def request(id: UUID) =
+      FakeRequest(GET, s"/notes/${id.toString}")
+        .addAttr(RequestAttributes.Correlation, Correlation("cid"))
+
+    "return OK in case note has been found" in new Fixture {
+      val service = new NotesServiceProto {
+        override def find: Service[UUID, Option[OutgoingNote], ServiceError] = mockService { _ =>
+          Task.now(Right(Some(outgoingNote)))
+        }
+      }
+
+      val res = controller.find(uuid).apply(request(uuid))
+
+      status(res) should equal (OK)
+      val responseJson = contentAsJson(res).asJsObject
+      responseJson.fields.map(_._1).toSet should equal (Set("id", "creator", "note", "recentEdit"))
+    }
+
+    "return NOT_FOUND in case note has been found" in new Fixture {
+      val service = new NotesServiceProto {
+        override def find: Service[UUID, Option[OutgoingNote], ServiceError] = mockService { _ =>
+          Task.now(Right(None))
+        }
+      }
+
+      val res = controller.find(uuid).apply(request(uuid))
+
+      status(res) should equal (NOT_FOUND)
+      val responseJson = contentAsJson(res).asJsObject
+      responseJson.fields.map(_._1).toSet should equal (Set("message"))
+    }
+
+  }
+
+  "NotesController.update" should {
+    def request(id: UUID, jsonString: String) =
+      FakeRequest(PUT, s"/notes/${id.toString}")
+        .withJsonBody(Json.parse(jsonString))
+        .addAttr(RequestAttributes.Correlation, Correlation("cid"))
+
+    val correctJsonString =
+      """
+        |{
+        |  "creator" : "Different author",
+        |  "note": "lorem ipsum"
+        |}
+      """.stripMargin
+
+    "return OK if everything went fine" in new Fixture {
+      val service = new NotesServiceProto {
+        override def update: Service[UpdateNote, OutgoingNote, ServiceError] = mockService { _ =>
+          Task.now(Right(outgoingNote))
+        }
+      }
+
+      val req = request(uuid, correctJsonString)
+      val res = controller.update(uuid).apply(req)
+
+      status(res) should equal (OK)
+      val responseJson = contentAsJson(res).asJsObject
+      responseJson.fields.map(_._1).toSet should equal (Set("id", "creator", "note", "recentEdit"))
+    }
+
+    "return NOT_FOUND if requested resource not found" in new Fixture {
+      val service = new NotesServiceProto {
+        override def update: Service[UpdateNote, OutgoingNote, ServiceError] = mockService { _ =>
+          Task.now(Left(MissingResource("missing")))
+        }
+      }
+
+      val req = request(uuid, correctJsonString)
+      val res = controller.update(uuid).apply(req)
+
+      status(res) should equal (NOT_FOUND)
+    }
+
+    "return INTERNAL_SERVER_ERROR if NotesService failed" in new Fixture {
+      val service = new NotesServiceProto {
+        override def update: Service[UpdateNote, OutgoingNote, ServiceError] = mockService { _ =>
+          Task.now(Left(ServiceFailed("some err")))
+        }
+      }
+
+      val req = request(uuid, correctJsonString)
+      val res = controller.update(uuid).apply(req)
+
+      status(res) should equal (INTERNAL_SERVER_ERROR)
+    }
+
+    "return BAD_REQUEST if object being updated is not valid" in new Fixture {
+      val service = new NotesServiceProto {
+        override def update: Service[UpdateNote, OutgoingNote, ServiceError] = mockService { _ =>
+          Task.now(Left(InvalidResource(List("validation error"))))
+        }
+      }
+
+      val req = request(uuid, correctJsonString)
+      val res = controller.update(uuid).apply(req)
+
+      status(res) should equal (BAD_REQUEST)
+    }
+
+    "return BAD_REQUEST if request JSON cannot be deserialized to business object" in new Fixture {
+      val service = new NotesServiceProto
+
+      val req = request(uuid, "{}")
+      val res = controller.update(uuid).apply(req)
+
+      status(res) should equal (BAD_REQUEST)
+    }
+
   }
 
   "NotesController.create" should {
@@ -39,7 +177,7 @@ class NotesControllerSpec extends BaseUnitTest with StubControllerComponentsFact
         |}
       """.stripMargin
 
-    "return CREATED if everything went fine" in new TestContext {
+    "return CREATED if everything went fine" in new Fixture {
       val service = new NotesServiceProto {
         override def create: Service[IncomingNote, UUID, ServiceError] = mockService { _ =>
           Task.now(Right(uuid))
@@ -53,7 +191,7 @@ class NotesControllerSpec extends BaseUnitTest with StubControllerComponentsFact
       (contentAsJson(res) \ "message").get should equal (JsString(uuid.toString))
     }
 
-    "return BAD_REQUEST if incomplete request's JSON" in new TestContext {
+    "return BAD_REQUEST if incomplete request's JSON" in new Fixture {
       val service = new NotesServiceProto {
         override def create: Service[IncomingNote, UUID, ServiceError] = mockService { _ =>
           Task.now(Right(uuid))
@@ -67,7 +205,7 @@ class NotesControllerSpec extends BaseUnitTest with StubControllerComponentsFact
       status(res) should equal(BAD_REQUEST)
     }
 
-    "return INTERNAL_SERVER_ERROR if NotesService failed" in new TestContext {
+    "return INTERNAL_SERVER_ERROR if NotesService failed" in new Fixture {
       val service = new NotesServiceProto {
         override def create: Service[IncomingNote, UUID, ServiceError] = mockService { _ =>
           Task.now(Left(ServiceFailed("some err")))
@@ -81,21 +219,23 @@ class NotesControllerSpec extends BaseUnitTest with StubControllerComponentsFact
     }
   }
 
-}
+  trait Fixture {
+    def service: NotesService
 
-trait TestContext {
+    val uuid = UUID.randomUUID
+    val someTime = new DateTime
 
-  val uuid = UUID.randomUUID()
+    val scheduler = monix.execution.Scheduler.Implicits.global
 
-  def service: NotesService
+    val outgoingNote = OutgoingNote(uuid, "creator", "note", someTime)
 
-  val scheduler = monix.execution.Scheduler.Implicits.global
+    // has to be lazy as `service` is not initialized when TestContext constructor is being initialized
+    lazy val controller = {
+      implicit val profiler = NoopServiceProfiler
+      implicit val controllerComponents = stubControllerComponents()
 
-  // has to be val as `service` is not initialized when TestContext constructor is being initialized
-  lazy val controller = {
-    implicit val profiler = NoopServiceProfiler
-    implicit val controllerComponents = stubControllerComponents()
-
-    new NotesController(service, scheduler)
+      new NotesController(service, scheduler)
+    }
   }
+
 }
