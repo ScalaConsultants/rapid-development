@@ -32,8 +32,8 @@ Play App for rapid development
 - [ ] 3rdParty service call with build in timeout and circuit breaker
 - [ ] update README with information where are defined useful utils and implicit transformations
 - [ ] clear all code TODOs
-- [ ] make public and private healtcheck endpoint (based on existing `/healthcheck`)
-
+- [ ] make public and private health check endpoint (based on existing `/healthcheck`)
+- [ ] provide [giter8](https://github.com/foundweekends/giter8) support
 
 ### Database for local development
 
