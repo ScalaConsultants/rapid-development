@@ -20,7 +20,6 @@ package object services {
   final case class InvalidResource(msg: Seq[String]) extends ServiceError
   final case class DatabaseCallFailed(msg: String) extends DatabaseError
   final case class ResourceNotFound(msg: String) extends DatabaseError
-  final case class InvalidDbResource(msg: Seq[String]) extends DatabaseError
   //  final case class ExternalServiceValidationError(endpoint: String, parseErrors: Seq[(JsPath, scala.Seq[ValidationError])])
 //    extends ExternalServiceError
 
@@ -49,8 +48,6 @@ package object services {
           ServiceFailed(msg)
         case ResourceNotFound(msg) =>
           MissingResource(msg)
-        case InvalidDbResource(errors) =>
-          InvalidResource(errors)
       })
     }
   }
