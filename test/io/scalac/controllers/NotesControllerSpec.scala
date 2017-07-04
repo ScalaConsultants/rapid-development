@@ -4,19 +4,20 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import io.scalac.common.adapters.NotesServiceProto
-import io.scalac.common.core.Correlation
-import io.scalac.common.play.RequestAttributes
-import io.scalac.common.services.{Context, Logger, NoopServiceProfiler, Profiler, Service, ServiceError, ServiceFailed}
-import io.scalac.services._
 import monix.eval.Task
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpec}
+import org.scalatest.BeforeAndAfterAll
 import play.api.libs.json._
 import play.api.test.Helpers.{status, _}
 import play.api.test.{FakeRequest, StubControllerComponentsFactory}
 
-class NotesControllerSpec extends WordSpec with Matchers with StubControllerComponentsFactory with ScalaFutures with BeforeAndAfterAll {
+import io.scalac.common.BaseUnitTest
+import io.scalac.common.adapters.NotesServiceProto
+import io.scalac.common.core.Correlation
+import io.scalac.common.play.RequestAttributes
+import io.scalac.common.services.{NoopServiceProfiler, Service, ServiceError, ServiceFailed}
+import io.scalac.services._
+
+class NotesControllerSpec extends BaseUnitTest with StubControllerComponentsFactory with BeforeAndAfterAll {
   implicit val system = ActorSystem()
   implicit val mat = ActorMaterializer()
 
@@ -83,9 +84,6 @@ class NotesControllerSpec extends WordSpec with Matchers with StubControllerComp
 }
 
 trait TestContext {
-  def mockService[Req, Res, E <: ServiceError](fn: Req => Task[Either[E, Res]]): Service[Req, Res, E] = new Service[Req, Res, E] {
-    def apply[Ctx: Context, P: Profiler, L: Logger](req: Req): Task[Either[E, Res]] = fn(req)
-  }
 
   val uuid = UUID.randomUUID()
 

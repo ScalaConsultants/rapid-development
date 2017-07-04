@@ -59,7 +59,7 @@ class DefaultNotesService (
     Service("io.scalac.services.DefaultNotesService.update") { req =>
       implicit serviceContext =>
 
-        val findExistingNote: DatabaseResponse[Note] = notesDao.find(req.id).tflatMap { optNote =>
+        def findExistingNote: DatabaseResponse[Note] = notesDao.find(req.id).tflatMap { optNote =>
           optNote.fold(ResourceNotFound("Cannot update non-existent element").asLeft[Note])(_.asRight)
         }
 
