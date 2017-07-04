@@ -24,7 +24,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         }
 
         val response = notesService.find(uuid).runAsync.block
-        response.isRight shouldBe true
         response shouldBe none.asRight
       }
 
@@ -35,7 +34,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         }
 
         val response = notesService.find(uuid).runAsync.block
-        response.isRight shouldBe true
         response shouldBe outgoingNote.some.asRight
       }
     }
@@ -48,7 +46,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         }
 
         val response = notesService.find(uuid).runAsync.block
-        response.isLeft shouldBe true
         response shouldBe ServiceFailed("BOOM").asLeft
       }
     }
@@ -63,7 +60,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         }
 
         val response = notesService.list(pagination).runAsync.block
-        response.isRight shouldBe true
         response shouldBe Seq.empty.asRight
       }
 
@@ -74,7 +70,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         }
 
         val response = notesService.list(pagination).runAsync.block
-        response.isRight shouldBe true
         response shouldBe Seq(outgoingNote).asRight
       }
     }
@@ -87,7 +82,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         }
 
         val response = notesService.list(pagination).runAsync.block
-        response.isLeft shouldBe true
         response shouldBe ServiceFailed("BOOM").asLeft
       }
     }
@@ -104,7 +98,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         val newNote = IncomingNote(dbNote.creator, dbNote.note)
 
         val response = notesService.create(newNote).runAsync.block
-        response.isRight shouldBe true
         response shouldBe uuid.asRight
       }
     }
@@ -117,7 +110,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         val newNote = IncomingNote("A", dbNote.note)
 
         val response = notesService.create(newNote).runAsync.block
-        response.isLeft shouldBe true
         response shouldBe InvalidResource(Seq("creator's length must be between 3 and 100 characters")).asLeft
       }
 
@@ -127,7 +119,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         val newNote = IncomingNote(dbNote.creator, "")
 
         val response = notesService.create(newNote).runAsync.block
-        response.isLeft shouldBe true
         response shouldBe InvalidResource(Seq("note's length must be between 1 and 5000 characters")).asLeft
       }
 
@@ -139,7 +130,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         val newNote = IncomingNote(dbNote.creator, dbNote.note)
 
         val response = notesService.create(newNote).runAsync.block
-        response.isLeft shouldBe true
         response shouldBe ServiceFailed("BOOM").asLeft
       }
     }
@@ -160,7 +150,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         val updateNote = UpdateNote(uuid, noteToUpdate)
 
         val response = notesService.update(updateNote).runAsync.block
-        response.isRight shouldBe true
         val updatedNote = response.right.get
         assert(updatedNote.recentEdit.isAfter(dbNote.updatedAt), "Recent update timestamp must be later than the one already persisted")
         updatedNote.creator shouldBe noteToUpdate.creator
@@ -178,7 +167,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         val updateNote = UpdateNote(uuid, noteToUpdate)
 
         val response = notesService.update(updateNote).runAsync.block
-        response.isLeft shouldBe true
         response shouldBe InvalidResource(Seq("creator's length must be between 3 and 100 characters")).asLeft
       }
 
@@ -189,7 +177,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         val updateNote = UpdateNote(uuid, noteToUpdate)
 
         val response = notesService.update(updateNote).runAsync.block
-        response.isLeft shouldBe true
         response shouldBe InvalidResource(Seq("note's length must be between 1 and 5000 characters")).asLeft
       }
 
@@ -203,7 +190,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         val updateNote = UpdateNote(uuid, noteToUpdate)
 
         val response = notesService.update(updateNote).runAsync.block
-        response.isRight shouldBe false
         response shouldBe MissingResource("Cannot update non-existent element").asLeft
       }
 
@@ -215,7 +201,6 @@ class NotesServicesSpecs extends BaseUnitTest {
         val newNote = IncomingNote(dbNote.creator, dbNote.note)
 
         val response = notesService.create(newNote).runAsync.block
-        response.isLeft shouldBe true
         response shouldBe ServiceFailed("BOOM").asLeft
       }
     }
