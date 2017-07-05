@@ -12,7 +12,6 @@ import io.scalac.domain.dao.NotesDao
 import io.scalac.domain.entities.Note
 import monix.cats.monixToCatsMonad
 import monix.eval.Task
-import org.joda.time.DateTime
 
 trait NotesService {
 
@@ -33,33 +32,28 @@ class DefaultNotesService (
   }
 
   override def list: Service[Pagination, Seq[OutgoingNote], ServiceError] =
-    Service("io.scalac.services.DefaultNotesService.list") { req =>
-      implicit serviceContext =>
+    Service("io.scalac.services.DefaultNotesService.list") { req => _ =>
         notesDao.listAll(req).tmap(_.map(Conversions.toOutgoingNote)).toServiceResponse
     }
 
   override def find: Service[UUID, Option[OutgoingNote], ServiceError] =
-    Service("io.scalac.services.DefaultNotesService.find") { req =>
-      implicit serviceContext =>
+    Service("io.scalac.services.DefaultNotesService.find") { req => _ =>
         notesDao.find(req).tmap(_.map(Conversions.toOutgoingNote)).toServiceResponse
     }
 
   override def create: Service[IncomingNote, UUID, ServiceError] =
-    Service("io.scalac.services.DefaultNotesService.create") { req =>
-      implicit serviceContext =>
+    Service("io.scalac.services.DefaultNotesService.create") { req => _ =>
         req.validate().fold(
           invalid => Task.now(InvalidResource(invalid.toList).asLeft),
           valid => {
-            val now = DateTime.now()
-            val note = Note(Some(UUID.randomUUID()), valid.creator, valid.note, now, now, None)
+            val note = Conversions.fromIncomingNote(valid)
             notesDao.create(note).toServiceResponse
           }
         )
     }
 
   override def update: Service[UpdateNote, OutgoingNote, ServiceError] =
-    Service("io.scalac.services.DefaultNotesService.update") { req =>
-      implicit serviceContext =>
+    Service("io.scalac.services.DefaultNotesService.update") { req => _ =>
 
         def findExistingNote: DatabaseResponse[Note] = notesDao.find(req.id).tflatMap { optNote =>
           optNote.fold(ResourceNotFound("Cannot update non-existent element").asLeft[Note])(_.asRight)
