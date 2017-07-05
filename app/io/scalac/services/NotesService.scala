@@ -3,15 +3,15 @@ package io.scalac.services
 import java.util.UUID
 
 import cats.syntax.either._
+
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.Pagination
 import io.scalac.common.services._
 import io.scalac.common.syntax._
 import io.scalac.domain.dao.NotesDao
 import io.scalac.domain.entities.Note
-import io.scalac.services.ValidatedUtils._
 import monix.cats.monixToCatsMonad
-import org.joda.time.DateTime
+import monix.eval.Task
 
 trait NotesService {
 
@@ -32,50 +32,48 @@ class DefaultNotesService (
   }
 
   override def list: Service[Pagination, Seq[OutgoingNote], ServiceError] =
-    Service("io.scalac.services.DefaultNotesService.list") { req =>
-      implicit serviceContext =>
+    Service("io.scalac.services.DefaultNotesService.list") { req => _ =>
         notesDao.listAll(req).tmap(_.map(Conversions.toOutgoingNote)).toServiceResponse
     }
 
   override def find: Service[UUID, Option[OutgoingNote], ServiceError] =
-    Service("io.scalac.services.DefaultNotesService.find") { req =>
-      implicit serviceContext =>
+    Service("io.scalac.services.DefaultNotesService.find") { req => _ =>
         notesDao.find(req).tmap(_.map(Conversions.toOutgoingNote)).toServiceResponse
     }
 
   override def create: Service[IncomingNote, UUID, ServiceError] =
-    Service("io.scalac.services.DefaultNotesService.create") { req =>
-      implicit serviceContext =>
-
-        val now = DateTime.now()
-        (for {
-          _       <- req.validate().asDatabaseResponse.eitherT
-          note    = Note(Some(UUID.randomUUID()), req.creator, req.note, now, now, None)
-          newUUID <- notesDao.create(note).eitherT
-        } yield newUUID).value.toServiceResponse
+    Service("io.scalac.services.DefaultNotesService.create") { req => _ =>
+        req.validate().fold(
+          invalid => Task.now(InvalidResource(invalid.toList).asLeft),
+          valid => {
+            val note = Conversions.fromIncomingNote(valid)
+            notesDao.create(note).toServiceResponse
+          }
+        )
     }
 
   override def update: Service[UpdateNote, OutgoingNote, ServiceError] =
-    Service("io.scalac.services.DefaultNotesService.update") { req =>
-      implicit serviceContext =>
+    Service("io.scalac.services.DefaultNotesService.update") { req => _ =>
 
         def findExistingNote: DatabaseResponse[Note] = notesDao.find(req.id).tflatMap { optNote =>
           optNote.fold(ResourceNotFound("Cannot update non-existent element").asLeft[Note])(_.asRight)
         }
 
-        def performUpdate(existingNote: Note) = {
+        def performUpdate(incomingNote: IncomingNote, existingNote: Note) = {
           val noteToUpdate = existingNote.update(
-            creator = req.incomingNote.creator,
-            note = req.incomingNote.note)
+            creator = incomingNote.creator,
+            note = incomingNote.note)
           notesDao.update(noteToUpdate)
         }
 
-        val op = for {
-          _            <- req.incomingNote.validate().asDatabaseResponse.eitherT
-          existingNote <- findExistingNote.eitherT
-          updatedNote  <- performUpdate(existingNote).eitherT
-        } yield Conversions.toOutgoingNote(updatedNote)
-
-        op.value.toServiceResponse
+        req.incomingNote.validate().fold(
+          invalid => Task.now(InvalidResource(invalid.toList).asLeft),
+          valid => {
+            (for {
+              existingNote <- findExistingNote.eitherT
+              updatedNote  <- performUpdate(valid, existingNote).eitherT
+            } yield Conversions.toOutgoingNote(updatedNote)).value.toServiceResponse
+          }
+        )
     }
 }
