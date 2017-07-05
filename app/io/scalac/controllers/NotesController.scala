@@ -2,39 +2,29 @@ package io.scalac.controllers
 
 import java.util.UUID
 
-import io.scalac.common.auth
 import io.scalac.common.logger.Logging
-import io.scalac.common.play.{GenericResponse, PaginatedResponse, Pagination, RequestAttributes}
+import io.scalac.common.play._
 import io.scalac.common.services.{InvalidResource, MissingResource, ServiceProfiler}
 import io.scalac.services.{IncomingNote, NotesService, UpdateNote}
 import monix.execution.Scheduler
-import play.api.mvc.{AbstractController, ControllerComponents}
-
-import scala.concurrent.Future
+import play.api.mvc._
 
 class NotesController (
   notesService: NotesService,
   scheduler: Scheduler)
   (implicit profiler: ServiceProfiler, controllerComponents: ControllerComponents)
-  extends AbstractController(controllerComponents) with Logging {
+  extends AbstractController(controllerComponents) with Logging with ControllerHelper {
 
   import Serializers._
   import io.scalac.common.play.serializers.Serializers._
 
   private implicit val schedulerImpl = scheduler
 
-  def all(limit: Int, offset: Int) = Action.async(parse.default) { request =>
-    implicit val emptyContext = auth.EmptyContext()
-    implicit val c = request.attrs(RequestAttributes.Correlation)
-    logger.info(s"${request.path}")
+  def all(limit: Int, offset: Int) = noEntity { implicit request => implicit ctx => implicit corr =>
     val pagination = Pagination(limit = limit, offset = offset)
     notesService.list(pagination).runAsync.map {
       _.fold(
-        serviceError => {
-          val msg = s"Failed due to: $serviceError"
-          logger.error(s"${request.path} - $msg")
-          InternalServerError(GenericResponse(msg).asJson)
-        },
+        otherErrorsHandler,
         notes => {
           logger.info(s"${request.path} - successful response")
           val response = PaginatedResponse(
@@ -46,17 +36,10 @@ class NotesController (
     }
   }
 
-  def find(noteId: UUID) = Action.async(parse.default) { request =>
-    implicit val emptyContext = auth.EmptyContext()
-    implicit val c = request.attrs(RequestAttributes.Correlation)
-    logger.info(s"${request.path}")
+  def find(noteId: UUID) = noEntity { implicit request => implicit ctx => implicit corr =>
     notesService.find(noteId).runAsync.map {
       _.fold(
-        serviceError => {
-          val msg = s"Failed due to: $serviceError"
-          logger.error(s"${request.path} - $msg")
-          InternalServerError(GenericResponse(msg).asJson)
-        },
+        otherErrorsHandler,
         noteOpt => {
           logger.info(s"${request.path} - successful response")
           noteOpt match {
@@ -68,62 +51,35 @@ class NotesController (
     }
   }
 
-  def update(noteId: UUID) = Action.async(parse.json) { request =>
-    implicit val emptyContext = auth.EmptyContext()
-    implicit val c = request.attrs(RequestAttributes.Correlation)
-    logger.info(s"${request.path}")
-    request.body.validate[IncomingNote].fold(
-      invalid => badRequestFuture(s"Invalid body: ${invalid.mkString("\n")}"),
-      noteToUpdate => {
-        notesService.update(UpdateNote(noteId, noteToUpdate)).runAsync.map {
-          _.fold(
-            {
-              case MissingResource(msg) =>
-                logger.info(msg)
-                NotFound(GenericResponse(msg).asJson)
-              case InvalidResource(errors) =>
-                logger.info("Cannot update note with invalid request")
-                BadRequest(GenericResponse(s"Invalid body: ${errors.mkString("\n")}").asJson)
-              case serviceError =>
-                val msg = s"Failed due to: $serviceError"
-                logger.error(s"${request.path} - $msg")
-                InternalServerError(GenericResponse(msg).asJson)
-            },
-            newUUID => {
-              logger.info(s"${request.path} - successful response")
-              Created(GenericResponse(newUUID.toString).asJson)
-            }
-          )
+  def update(noteId: UUID) = withParsedEntity[IncomingNote] { noteToUpdate => implicit request => implicit ctx => implicit corr =>
+    notesService.update(UpdateNote(noteId, noteToUpdate)).runAsync.map {
+      _.fold (
+        handler {
+          case MissingResource(msg) =>
+            logger.info(msg)
+            NotFound(GenericResponse(msg).asJson)
+          case InvalidResource(errors) =>
+            logger.info("Cannot update note with invalid request")
+            BadRequest(GenericResponse(s"Invalid body: ${errors.mkString("\n")}").asJson)
+        }.orElse(otherErrorsHandler),
+        outgoingNote => {
+          logger.info(s"${request.path} - successful response")
+          Ok(outgoingNote.asJson)
         }
-      }
-    )
+      )
+    }
   }
 
-  def create() = Action.async(parse.anyContent) { request =>
-    implicit val emptyContext = auth.EmptyContext()
-    implicit val c = request.attrs(RequestAttributes.Correlation)
-    logger.info(s"${request.path}")
-    request.body.asJson.map(_.validate[IncomingNote].fold(
-      invalid => badRequestFuture(s"Invalid body: ${invalid.mkString(" ")}"),
-      newNote => {
-        notesService.create(newNote).runAsync.map {
-          _.fold(
-            {
-              case serviceError =>
-                val msg = s"Failed due to: $serviceError"
-                logger.error(s"${request.path} - $msg")
-                InternalServerError(GenericResponse(msg).asJson)
-            },
-            newUUID => {
-              logger.info(s"${request.path} - successful response")
-              Created(GenericResponse(newUUID.toString).asJson)
-            }
-          )
+  def create() = withParsedEntity[IncomingNote] { newNote => implicit request => implicit ctx => implicit corr =>
+    notesService.create(newNote).runAsync.map {
+      _.fold(
+        otherErrorsHandler,
+        newUUID => {
+          logger.info(s"${request.path} - successful response")
+          Created(GenericResponse(newUUID.toString).asJson)
         }
-      }
-    )).getOrElse(badRequestFuture("Body is a not a correct JSON"))
+      )
+    }
   }
 
-  private def badRequestFuture(msg: String) =
-    Future.successful(BadRequest(GenericResponse(msg).asJson))
 }
