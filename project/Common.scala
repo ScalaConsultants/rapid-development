@@ -10,7 +10,7 @@ object Common {
       scalaVersion  := "2.12.2",
       scalacOptions ++= commonScalacOptions,
 
-      // TODO: Are those really needed
+      // It avoids generating documentation files from scaladocs during sbt dist. Consequently, it decreases the size of the build.
       sources in (Compile, doc) := Seq.empty,
       publishArtifact in (Compile, packageDoc) := false
     )
