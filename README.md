@@ -24,7 +24,7 @@ Play App for rapid development
 - [x] migration to Play 2.6
 - [X] tests
 - [x] static views
-- [ ] split project into core and web modules
+- [x] split project into core and web modules
 - [ ] example of versioned endpoints - path or header negotiation?
 - [ ] CRSF
 - [ ] SSL
@@ -89,12 +89,3 @@ and so on. This layer should communicate with `core` using business objects.
 `core` contains of two main packages: `io.scalac.common` and `io.scalac.domain`. The first one is responsible for
 handling cross-cutting concerns as e.g. logging while the second one is responsible for
 pure business logic. In future `core` may be splitted into two modules.
-
-### Known issues after migration to Play 2.6
-
-        SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
-        SLF4J: Defaulting to no-operation (NOP) logger implementation
-        SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
-
-Issue: https://github.com/playframework/playframework/issues/7422
-Fix: https://github.com/playframework/playframework/pull/7534 (looks like in Play 2.6.1)
