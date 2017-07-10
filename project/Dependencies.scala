@@ -6,7 +6,7 @@ object Dependencies {
     val slick       = "3.2.0"
     val monix       = "2.3.0"
     val cats        = "0.9.0"
-    val playJson    = "2.6.0"
+    val playJson    = "2.6.2"
     val pureConfig  = "0.7.2"
   }
 
