@@ -46,7 +46,7 @@ docker-compose up -d
 
 ##### Migration using Flyway
 ```
-sbt -Dflyway.url="jdbc:postgresql://127.0.0.1:5432/rapid-development" -Dflyway.user=postgres-dev -Dflyway.password=secretpass flywayMigrate
+sbt -Dflyway.url="jdbc:postgresql://127.0.0.1:5432/rapid-development" -Dflyway.user=postgres-dev -Dflyway.password=secretpass core/flywayMigrate
 ```
 
 ### Available endpoints
@@ -74,6 +74,21 @@ Status of the application itself, additionally shows build data.
           "creator": String, lenght: 3 -> 100,
           "note": String, lenght: 1 -> 5000,
         }
+        
+### Modularization of rapid-development app
+
+As `rapid-development` has been designed as a template for creating applications we divided it into submodules
+to help to separate concerns. As for now there are 2 submodules:
+
+* `core` - this is where business logic lives. There should be nothing Play-specific there. The main goal is to be able to
+change HTTP layer to different framework/library (e.g. `akka-http`) without changing `core` at all. You can see some 
+`play` in some imports there but that's just because `play-json` has been chosen as a JSON library.
+* `web` - this is where HTTP-specific things are implemented: routing, destructuring HTTP requests, HTTP return codes 
+and so on. This layer should communicate with `core` using business objects.
+
+`core` contains of two main packages: `io.scalac.common` and `io.scalac.domain`. The first one is responsible for
+handling cross-cutting concerns as e.g. logging while the second one is responsible for
+pure business logic. In future `core` may be splitted into two modules.
 
 ### Known issues after migration to Play 2.6
 
