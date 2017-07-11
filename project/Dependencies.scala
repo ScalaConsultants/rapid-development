@@ -8,6 +8,7 @@ object Dependencies {
     val cats        = "0.9.0"
     val playJson    = "2.6.2"
     val pureConfig  = "0.7.2"
+    val silhouette  = "5.0.0-RC2"
   }
 
   val cats = Seq("org.typelevel" %% "cats" % Versions.cats)
@@ -33,6 +34,14 @@ object Dependencies {
   )
 
   val pureconfig = Seq("com.github.pureconfig" %% "pureconfig" % Versions.pureConfig)
+
+  val silhouette = Seq(
+    "com.mohiva" %% "play-silhouette" % Versions.silhouette,
+    "com.mohiva" %% "play-silhouette-password-bcrypt" % Versions.silhouette,
+    "com.mohiva" %% "play-silhouette-crypto-jca" % Versions.silhouette,
+    "com.mohiva" %% "play-silhouette-persistence" % Versions.silhouette,
+    "com.mohiva" %% "play-silhouette-testkit" % Versions.silhouette % "test"
+  )
 
   // test deps
   val scalatest = Seq("org.scalatest" %% "scalatest" % "3.0.3" % Test)

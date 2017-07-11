@@ -17,12 +17,15 @@ lazy val web = (project in file("web"))
     name := "rapid-development-web",
     javaOptions in Universal +=  "-Dpidfile.path=/dev/null",
     packageName in Universal := "rapid-development",
-    libraryDependencies ++= Seq(ehcache, ws) ++ pureconfig ++ scalatestPlusPlay,
+    libraryDependencies ++= Seq(ehcache, ws) ++ pureconfig  ++ silhouette ++ scalatestPlusPlay,
     generateBuildInfo
    )
   .dependsOn(core % "compile->compile,test") // we want to depend also on core:test as we use BaseUnitTest
 
 lazy val root = (project in file("."))
+  .settings(
+    name := "rapid-development"
+  )
   .aggregate(web, core)
 
 addCommandAlias("run", ";web/run")

@@ -58,10 +58,10 @@ class NotesController (
       _.fold (
         handler {
           case MissingResource(msg) =>
-            logger.info(msg)
+            logger.info(s"${request.path} - $msg")
             NotFound(GenericResponse(msg).asJson)
           case InvalidResource(errors) =>
-            logger.info("Cannot update note with invalid request")
+            logger.info(s"${request.path} - Cannot update note with invalid request")
             BadRequest(GenericResponse(s"Invalid body: ${errors.mkString("\n")}").asJson)
         }.orElse(otherErrorsHandler),
         outgoingNote => {

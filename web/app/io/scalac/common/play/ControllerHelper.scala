@@ -42,7 +42,7 @@ trait ControllerHelper { self: Logging with AbstractController =>
 
   def handler(pf: PartialFunction[ServiceError, Result]): PartialFunction[ServiceError, Result] = pf
 
-  def otherErrorsHandler(implicit request: Request[AnyContent], corr: Correlation): PartialFunction[ServiceError, Result] = {
+  def otherErrorsHandler[T](implicit request: Request[T], corr: Correlation): PartialFunction[ServiceError, Result] = {
     case serviceError =>
       val msg = s"Failed due to: $serviceError"
       logger.error(s"${request.path} - $msg")

@@ -17,8 +17,11 @@ package object services {
   final case class ServiceFailed(msg: String) extends ServiceError
   final case class MissingResource(msg: String) extends ServiceError
   final case class InvalidResource(msg: Seq[String]) extends ServiceError
+  final case object UserExists extends ServiceError
+
   final case class DatabaseCallFailed(msg: String) extends DatabaseError
   final case class ResourceNotFound(msg: String) extends DatabaseError
+
   //  final case class ExternalServiceValidationError(endpoint: String, parseErrors: Seq[(JsPath, scala.Seq[ValidationError])])
 //    extends ExternalServiceError
 
