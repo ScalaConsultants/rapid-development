@@ -41,6 +41,7 @@ class MyComponents(context: Context)
   extends BuiltInComponentsFromContext(context)
     with HttpFiltersComponents
     with _root_.controllers.AssetsComponents
+    with SilhouetteComponents
     with Logging {
 
   implicit val _controllerComponents: ControllerComponents = controllerComponents

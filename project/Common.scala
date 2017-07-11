@@ -12,7 +12,10 @@ object Common {
 
       // It avoids generating documentation files from scaladocs during sbt dist. Consequently, it decreases the size of the build.
       sources in (Compile, doc) := Seq.empty,
-      publishArtifact in (Compile, packageDoc) := false
+      publishArtifact in (Compile, packageDoc) := false,
+      resolvers ++= Seq(
+        "Atlassian Releases" at "https://maven.atlassian.com/public/" //Needed by Silhouette
+      )
     )
   }
 

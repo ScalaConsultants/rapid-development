@@ -17,7 +17,7 @@ lazy val web = (project in file("modules/web"))
     name := "rapid-development-web",
     javaOptions in Universal +=  "-Dpidfile.path=/dev/null",
     packageName in Universal := "rapid-development",
-    libraryDependencies ++= Seq(ehcache, ws) ++ pureconfig ++ scalatestPlusPlay,
+    libraryDependencies ++= Seq(ehcache, ws) ++ pureconfig  ++ silhouette ++ scalatestPlusPlay,
     generateBuildInfo
    )
   .dependsOn(core % "compile->compile,test") // we want to depend also on core:test as we use BaseUnitTest
