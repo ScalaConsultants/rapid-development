@@ -4,6 +4,7 @@ services:
     restart: on-failure
     #https://github.com/sameersbn/docker-postgresql
     image: sameersbn/postgresql:9.6-2
+    container_name: postgres-rapid-development
     ports:
       - "5432:5432"
     environment:

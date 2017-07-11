@@ -44,6 +44,11 @@ Project uses PostgreSQL 9.6. In the project's root directory run
 docker-compose up -d
 ```
 
+To access instance running in the docker:
+```
+docker exec -it postgres-rapid-development psql -U postgres-dev -d rapid-development -W
+```
+
 ##### Migration using Flyway
 ```
 sbt -Dflyway.url="jdbc:postgresql://127.0.0.1:5432/rapid-development" -Dflyway.user=postgres-dev -Dflyway.password=secretpass core/flywayMigrate
@@ -88,4 +93,4 @@ and so on. This layer should communicate with `core` using business objects.
 
 `core` contains of two main packages: `io.scalac.common` and `io.scalac.domain`. The first one is responsible for
 handling cross-cutting concerns as e.g. logging while the second one is responsible for
-pure business logic. In future `core` may be splitted into two modules.
+pure business logic. In future `core` may be split into two modules.
