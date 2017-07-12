@@ -124,10 +124,10 @@ object EnumSupport extends PostgresProfile with PgEnumSupport {
   // https://stackoverflow.com/questions/22945485/how-to-map-postgresql-custom-enum-column-with-slick2-0-1
 
   object EnumsImplicits {
-    implicit val defaultBillingLangMapper = createEnumJdbcType("DefaultBillingLanguage", DefaultBillingLanguage)
-    implicit val paymentTypeMapper        = createEnumJdbcType("PaymentType", PaymentType)
-    implicit val commissionTypeMapper     = createEnumJdbcType("CommissionType", CommissionType)
-    implicit val netDaysMapper            = createEnumJdbcType("NetDays", NetDays)
+    implicit val defaultBillingLangMapper = createEnumJdbcType("DefaultBillingLanguage_Enum", DefaultBillingLanguage)
+    implicit val paymentTypeMapper        = createEnumJdbcType("PaymentType_Enum", PaymentType)
+    implicit val commissionTypeMapper     = createEnumJdbcType("CommissionType_Enum", CommissionType)
+    implicit val netDaysMapper            = createEnumJdbcType("NetDays_Enum", NetDays)
   }
 }
 
