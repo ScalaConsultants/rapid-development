@@ -150,13 +150,13 @@ class MerchantSlickPostgresRepository (
     def paymentType            = column[PaymentType]("payment_type")
     def commissionType         = column[CommissionType]("commission_type")
     def netDays                = column[NetDays]("net_days")
-    def ownerName              = column[String]("ownerName")
-    def companyName            = column[String]("companyName")
-    def virtualBankAccount     = column[String]("virtualBankAccount")
+    def ownerName              = column[String]("owner_name")
+    def companyName            = column[String]("company_name")
+    def virtualBankAccount     = column[String]("virtual_bank_account")
     def phone                  = column[String]("phone")
     def email                  = column[String]("email")
-    def taxId                  = column[String]("taxId")
-    def additionalInfo         = column[String]("additionalInfo")
+    def taxId                  = column[String]("tax_id")
+    def additionalInfo         = column[String]("additional_info")
     override def version       = column[Int]("version")
 
     def * =

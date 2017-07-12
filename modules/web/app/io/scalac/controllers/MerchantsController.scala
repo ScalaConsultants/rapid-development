@@ -22,7 +22,7 @@ class MerchantsController(
 
   private implicit val schedulerImpl = scheduler
 
-  def all(limit: Int, offset: Int) = noEntity { implicit request => implicit ctx => implicit corr =>
+  def all = noEntity { implicit request => implicit ctx => implicit corr =>
     merchantsService.findAll.runAsync.map {
       _.fold(
         otherErrorsHandler,

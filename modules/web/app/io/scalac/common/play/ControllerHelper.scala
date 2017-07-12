@@ -45,6 +45,7 @@ trait ControllerHelper { self: Logging with AbstractController =>
   def otherErrorsHandler(implicit request: Request[AnyContent], corr: Correlation): PartialFunction[ServiceError, Result] = {
     case serviceError =>
       val msg = s"Failed due to: $serviceError"
+      // TODO: I would expect to log stacktrace too here, but serviceError does not contain any Throwable instance...
       logger.error(s"${request.path} - $msg")
       InternalServerError(GenericResponse(msg).asJson)
   }

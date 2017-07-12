@@ -18,13 +18,13 @@ CREATE TABLE merchants (
   payment_type                PaymentType_Enum              NOT NULL,
   commission_type             CommissionType_Enum           NOT NULL,
   net_days                    NetDays_Enum                  NOT NULL,
-  ownerName                   TEXT,
-  companyName                 TEXT,
-  virtualBankAccount          TEXT,
+  owner_name                  TEXT,
+  company_name                TEXT,
+  virtual_bank_account        TEXT,
   phone                       TEXT,
   email                       TEXT,
-  taxId                       TEXT,
-  additionalInfo              TEXT,
+  tax_id                      TEXT,
+  additional_info             TEXT,
   version                     INTEGER                       NOT NULL
 );
 
@@ -32,8 +32,8 @@ CREATE INDEX idx_merchants_id_u ON merchants(id);
 
 -- Initial data
 INSERT INTO merchants(id, contract_from, contract_until, default_billing_language, payment_type,
-  commission_type, net_days, ownerName, companyName, virtualBankAccount, phone, email, taxId,
-  additionalInfo, version) VALUES
+  commission_type, net_days, owner_name, company_name, virtual_bank_account, phone, email, tax_id,
+  additional_info, version) VALUES
   ('af0b3c12-205b-4142-b4a0-b0edba88abfb', now(), now(), 'Thai', 'Prepaid',
    'Fixed', 'PerCover', 'owner1', 'company1', 'bankaccount1', 'phone1', 'email1@example.com', 'taxId1',
    'some additional Info1', 1
