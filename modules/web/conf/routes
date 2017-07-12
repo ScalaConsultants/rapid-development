@@ -16,3 +16,6 @@ GET     /notes                                     io.scalac.controllers.NotesCo
 GET     /notes/:noteId                             io.scalac.controllers.NotesController.find(noteId: java.util.UUID)
 PUT     /notes/:noteId                             io.scalac.controllers.NotesController.update(noteId: java.util.UUID)
 POST    /notes                                     io.scalac.controllers.NotesController.create()
+
+# Merchants
+GET     /merchants                                 io.scalac.controllers.merchants.MerchantsController.search(active: Boolean, billingCycle: String, paymentType: String, commissionType: String, lastInvoiceDate: Option[String], limit: Int, offset: Int)

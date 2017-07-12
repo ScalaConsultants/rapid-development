@@ -32,7 +32,7 @@ class PagesController (
         notes => {
           logger.info(s"${request.path} - successful response")
           val response = PaginatedResponse(
-            pagination.increase, notes
+            pagination.increase, notes, counter = -1
           )
           Ok(views.html.index(response))
         }

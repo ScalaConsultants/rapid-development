@@ -49,10 +49,10 @@ class MerchantBillingSettingsSlickPostgresRepository (
     def netDays = column[NetDays.Value]("net_days", O.SqlType("enum"))
     def defaultCommission = column[BigDecimal]("default_commission")
     def tags = column[List[String]]("tags", O.Default(List.empty[String]))
-    def contractStartDate = column[DateTime]("contract_start_date")
-    def contractEndDate = column[DateTime]("contract_end_date")
+    def contractStartDate = column[DateTime]("contract_start_date", O.SqlType("timestampz"))
+    def contractEndDate = column[DateTime]("contract_end_date", O.SqlType("timestampz"))
     def cycleType = column[CycleTypes.Value]("cycle_type", O.SqlType("enum"))
-    def cycleStartDate = column[DateTime]("cycle_start_date")
+    def cycleStartDate = column[DateTime]("cycle_start_date", O.SqlType("timestampz"))
     override def version = column[Int]("version")
 
 //    def merchant = foreignKey("merchant_id", merchantId, MerchantsSlickPostgresRepository.tableQuery)(_.id, onUpdate=ForeignKeyAction.Restrict)

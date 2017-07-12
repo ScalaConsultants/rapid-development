@@ -2,7 +2,7 @@ package io.scalac.domain.entities
 
 object PaymentTypes extends Enumeration {
 
-  val Prepaid, Postpaid = Value
+  val Prepaid, Postpaid, Pending = Value
 }
 
 object CommissionTypes extends Enumeration {

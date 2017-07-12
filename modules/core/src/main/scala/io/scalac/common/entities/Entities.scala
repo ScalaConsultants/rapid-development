@@ -11,5 +11,6 @@ final case class Pagination(limit: Int, offset: Int) {
 
 final case class PaginatedResponse[T](
   next: Pagination,
-  sequence: Seq[T]
+  sequence: Seq[T],
+  counter: Int
 )

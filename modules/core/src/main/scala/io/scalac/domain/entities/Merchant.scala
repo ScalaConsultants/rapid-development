@@ -44,8 +44,8 @@ class MerchantsSlickPostgresRepository (
     def city = column[String]("city", O.SqlType("VARCHAR(100)"))
     def country = column[String]("country", O.SqlType("VARCHAR(100)"))
     def active = column[Boolean]("active")
-    def createdAt = column[DateTime]("created_at")
-    def updatedAt = column[DateTime]("updated_at")
+    def createdAt = column[DateTime]("created_at", O.SqlType("timestampz"))
+    def updatedAt = column[DateTime]("updated_at", O.SqlType("timestampz"))
     override def version = column[Int]("version")
 
     def * = (id.?, merchantNo, name, city, country, active, createdAt, updatedAt, version.?) <> ((
@@ -54,6 +54,10 @@ class MerchantsSlickPostgresRepository (
 
   //TODO it should return pages/allCount too
   def listAll(pagination: Pagination): DBIO[Seq[Merchant]] = {
+    Compiled(tableQuery.drop(pagination.offset).take(pagination.limit)).result
+  }
+
+  def find(pagination: Pagination): DBIO[Seq[Merchant]] = {
     Compiled(tableQuery.drop(pagination.offset).take(pagination.limit)).result
   }
 }
