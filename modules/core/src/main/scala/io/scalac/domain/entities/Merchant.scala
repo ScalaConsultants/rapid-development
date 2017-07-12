@@ -6,6 +6,7 @@ import com.byteslounge.slickrepo.meta.{Versioned, VersionedEntity}
 import com.byteslounge.slickrepo.repository.VersionedRepository
 import com.github.tminglei.slickpg.PgEnumSupport
 import io.scalac.common.db.PostgresJdbcProfile
+import io.scalac.common.entities.Pagination
 import io.scalac.domain.entities.CommissionType.CommissionType
 import io.scalac.domain.entities.DefaultBillingLanguage.DefaultBillingLanguage
 import io.scalac.domain.entities.NetDays.NetDays
@@ -162,6 +163,10 @@ class MerchantSlickPostgresRepository (
     def * =
       (id.?, contractFrom, contractUntil, defaultBillingLanguage, paymentType, commissionType, netDays, ownerName.?,
       companyName.?, virtualBankAccount.?, phone.?, email.?, taxId.?, additionalInfo.?, version.?) <> ((Merchant.fromDbRepr _).tupled, Merchant.toDbRepr)
+  }
+
+  def findByCriteria(pagination: Pagination): DBIO[Seq[Merchant]] = {
+    Compiled(tableQuery.drop(pagination.offset).take(pagination.limit)).result
   }
 
 }

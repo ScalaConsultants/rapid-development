@@ -22,8 +22,9 @@ class MerchantsController(
 
   private implicit val schedulerImpl = scheduler
 
-  def all = noEntity { implicit request => implicit ctx => implicit corr =>
-    merchantsService.findAll.runAsync.map {
+  def all(limit: Int, offset: Int) = noEntity { implicit request => implicit ctx => implicit corr =>
+    val pagination = Pagination(limit, offset)
+    merchantsService.findByCriteria(pagination).runAsync.map {
       _.fold(
         otherErrorsHandler,
         merchants => {

@@ -2,20 +2,23 @@ package io.scalac.domain.services
 
 import java.util.UUID
 
+import cats.Functor
 import cats.syntax.either._
 import io.scalac.common.entities.Pagination
 import io.scalac.common.logger.Logging
 import io.scalac.common.services._
 import io.scalac.common.syntax._
-import io.scalac.domain.dao.{MerchantsDao}
-import io.scalac.domain.entities.{Merchant}
+import io.scalac.domain.dao.MerchantsDao
+import io.scalac.domain.entities.Merchant
 import io.scalac.domain.services.transport.{Conversions, IncomingNote, UpdateNote}
 import monix.cats.monixToCatsMonad
 import monix.eval.Task
 
-trait MerchantsService {
+import scala.concurrent.Future
 
-  def findAll(): ServiceResponse[Seq[Merchant]] //TODO prepare Service without request...
+
+trait MerchantsService {
+  def findByCriteria(pagination: Pagination): ServiceResponse[Seq[Merchant]] //TODO prepare Service without request...
 //  def list: Service[Pagination, Seq[OutgoingMerchant], ServiceError]
 //  def find: Service[UUID, Option[OutgoingMerchant], ServiceError]
 //  def create: Service[IncomingNote, UUID, ServiceError]
@@ -26,9 +29,8 @@ class DefaultMerchantsService(
     merchantsDao: MerchantsDao)(implicit val profiler: ServiceProfiler)
   extends MerchantsService with Logging {
 
-  override def findAll(): ServiceResponse[Seq[Merchant]] = {
-    //TODO what to do with db message? Map to Service message or just pass through?
-    merchantsDao.findAll().toServiceResponse
+  override def findByCriteria(pagination: Pagination): ServiceResponse[Seq[Merchant]] = {
+    merchantsDao.findByCriteria(pagination).toServiceResponse
   }
 
 //  override def list: Service[Pagination, Seq[OutgoingNote], ServiceError] =
