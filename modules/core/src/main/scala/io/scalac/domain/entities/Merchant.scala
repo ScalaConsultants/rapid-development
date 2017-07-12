@@ -6,14 +6,11 @@ import com.byteslounge.slickrepo.meta.{Versioned, VersionedEntity}
 import com.byteslounge.slickrepo.repository.VersionedRepository
 import com.github.tminglei.slickpg.PgEnumSupport
 import io.scalac.common.db.PostgresJdbcProfile
-import io.scalac.common.entities.Pagination
 import io.scalac.domain.entities.CommissionType.CommissionType
 import io.scalac.domain.entities.DefaultBillingLanguage.DefaultBillingLanguage
 import io.scalac.domain.entities.NetDays.NetDays
 import io.scalac.domain.entities.PaymentType.PaymentType
 import org.joda.time.DateTime
-import shapeless.ops.tuple.FlatMapper
-import shapeless.{Lazy, Poly1}
 import slick.ast.BaseTypedType
 import slick.basic.DatabaseConfig
 import slick.jdbc.PostgresProfile
@@ -132,8 +129,6 @@ object EnumSupport extends PostgresProfile with PgEnumSupport {
     implicit val commissionTypeMapper     = createEnumJdbcType("CommissionType", CommissionType)
     implicit val netDaysMapper            = createEnumJdbcType("NetDays", NetDays)
   }
-//  implicit val dogColumnExtensionMethodsBuilder = createEnumColumnExtensionMethodsBuilder(DefaultBillingLanguage)
-//  implicit val dogOptionColumnExtensionMethodsBuilder = createEnumOptionColumnExtensionMethodsBuilder(DefaultBillingLanguage)
 }
 
 class MerchantSlickPostgresRepository (
@@ -169,8 +164,5 @@ class MerchantSlickPostgresRepository (
       companyName.?, virtualBankAccount.?, phone.?, email.?, taxId.?, additionalInfo.?, version.?) <> ((Merchant.fromDbRepr _).tupled, Merchant.toDbRepr)
   }
 
-//  def listAll(pagination: Pagination): DBIO[Seq[Note]] = {
-//    Compiled(tableQuery.drop(pagination.offset).take(pagination.limit)).result
-//  }
 }
 
