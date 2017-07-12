@@ -83,7 +83,7 @@ Status of the application itself, additionally shows build data.
 ### Modularization of rapid-development app
 
 As `rapid-development` has been designed as a template for creating applications we divided it into submodules
-to help to separate concerns. As for now there are 2 submodules:
+to help to separate concerns. As for now there are 2 submodules defined under `/modules` path:
 
 * `core` - this is where business logic lives. There should be nothing Play-specific there. The main goal is to be able to
 change HTTP layer to different framework/library (e.g. `akka-http`) without changing `core` at all. You can see some 

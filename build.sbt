@@ -2,7 +2,7 @@ import BuildInfo._
 import Common._
 import Dependencies._
 
-lazy val core = (project in file("core"))
+lazy val core = (project in file("modules/core"))
   .commonSettings
   .settings (
     name := "rapid-development-core",
@@ -10,7 +10,7 @@ lazy val core = (project in file("core"))
     libraryDependencies ++= cats ++ monix ++ playJson ++ slick ++ postgres ++ scalatest
   )
 
-lazy val web = (project in file("web"))
+lazy val web = (project in file("modules/web"))
   .enablePlugins(PlayScala)
   .commonSettings
   .settings (
