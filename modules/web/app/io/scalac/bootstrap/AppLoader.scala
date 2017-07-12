@@ -7,11 +7,11 @@ import io.scalac.common.core.Correlation
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.{RootHttpErrorHandler, RootRequestHandler}
 import io.scalac.common.services.{DatabaseHealthCheck, HealthCheckServicesImpl, NoopServiceProfiler}
-import io.scalac.controllers.{NotesController, PagesController}
+import io.scalac.controllers.MerchantsController
 import io.scalac.common.db.{DBExecutor, PostgresJdbcProfile}
-import io.scalac.domain.dao.SlickNotesDao
-import io.scalac.domain.entities.NotesSlickPostgresRepository
-import io.scalac.domain.services.DefaultNotesService
+import io.scalac.domain.dao.SlickMerchantsDao
+import io.scalac.domain.entities.MerchantSlickPostgresRepository
+import io.scalac.domain.services.DefaultMerchantsService
 import monix.execution.Scheduler
 import monix.execution.schedulers.SchedulerService
 import play.api.ApplicationLoader.Context
@@ -46,10 +46,10 @@ class MyComponents(context: Context)
   val dbConfig = providePostgresDatabaseProfile(applicationLifecycle, databaseScheduler)
   val dbExecutor = new DBExecutor(dbConfig, databaseScheduler)
 
-  val notesRepo = new NotesSlickPostgresRepository(dbConfig)
-  val notesDao = new SlickNotesDao(notesRepo, dbExecutor)
+  val merchantsRepo = new MerchantSlickPostgresRepository(dbConfig)
+  val merchantsDao = new SlickMerchantsDao(merchantsRepo, dbExecutor)
 
-  val notesService = new DefaultNotesService(notesDao)
+  val merchantsService = new DefaultMerchantsService(merchantsDao)
 
   val healthCheckController = {
     val dbHealthCheck = new DatabaseHealthCheck(dbConfig)
@@ -60,8 +60,7 @@ class MyComponents(context: Context)
     new HealthCheckController(services, defaultScheduler)
   }
 
-  val notesController = new NotesController(notesService, defaultScheduler)
-  val pagesController = new PagesController(notesService, defaultScheduler)
+  val merchantsController = new MerchantsController(merchantsService, defaultScheduler)
 
   override lazy val httpErrorHandler: HttpErrorHandler = {
     //router below is used only in dev mode, causes stack overflow for Some(router) anyway
@@ -78,8 +77,7 @@ class MyComponents(context: Context)
       httpErrorHandler,
       assets,
       healthCheckController,
-      pagesController,
-      notesController)
+      merchantsController)
   }
 
   private def providePostgresDatabaseProfile(lifecycle: ApplicationLifecycle,

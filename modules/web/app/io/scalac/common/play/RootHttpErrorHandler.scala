@@ -33,7 +33,7 @@ class RootHttpErrorHandler(
   }
 
   override def onProdServerError(request: RequestHeader, e: UsefulException): Future[Result] =
-    Future.successful(InternalServerError(views.html.serverError(GenericResponse("Please check logs"))))
+    Future.successful(InternalServerError("Please check logs"))
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] =
     Future.successful(new Status(statusCode))

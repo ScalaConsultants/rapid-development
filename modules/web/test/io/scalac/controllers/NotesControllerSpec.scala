@@ -10,8 +10,8 @@ import io.scalac.common.play.RequestAttributes
 import io.scalac.common.services.{InvalidResource, MissingResource, NoopServiceProfiler, Service, ServiceError, ServiceFailed}
 import io.scalac.controllers.mock.NotesServiceMock
 import io.scalac.domain.BaseUnitTest
-import io.scalac.domain.services.NotesService
-import io.scalac.domain.services.transport.{IncomingNote, OutgoingNote, UpdateNote}
+import io.scalac.domain.services.MerchantsService
+import io.scalac.domain.services.transport.{IncomingNote, OutgoingMerchant, UpdateNote}
 import monix.eval.Task
 import org.joda.time.DateTime
 import org.scalatest.BeforeAndAfterAll
@@ -37,7 +37,7 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
       val itemsNumber = 4
 
       val service = new NotesServiceMock {
-        override def list: Service[Pagination, Seq[OutgoingNote], ServiceError] = mockService { _ =>
+        override def list: Service[Pagination, Seq[OutgoingMerchant], ServiceError] = mockService { _ =>
           Task.now(Right(List.fill(itemsNumber)(outgoingNote)))
         }
       }
@@ -58,7 +58,7 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
 
     "return OK in case note has been found" in new Fixture {
       val service = new NotesServiceMock {
-        override def find: Service[UUID, Option[OutgoingNote], ServiceError] = mockService { _ =>
+        override def find: Service[UUID, Option[OutgoingMerchant], ServiceError] = mockService { _ =>
           Task.now(Right(Some(outgoingNote)))
         }
       }
@@ -72,7 +72,7 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
 
     "return NOT_FOUND in case note has been found" in new Fixture {
       val service = new NotesServiceMock {
-        override def find: Service[UUID, Option[OutgoingNote], ServiceError] = mockService { _ =>
+        override def find: Service[UUID, Option[OutgoingMerchant], ServiceError] = mockService { _ =>
           Task.now(Right(None))
         }
       }
@@ -102,7 +102,7 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
 
     "return OK if everything went fine" in new Fixture {
       val service = new NotesServiceMock {
-        override def update: Service[UpdateNote, OutgoingNote, ServiceError] = mockService { _ =>
+        override def update: Service[UpdateNote, OutgoingMerchant, ServiceError] = mockService { _ =>
           Task.now(Right(outgoingNote))
         }
       }
@@ -117,7 +117,7 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
 
     "return NOT_FOUND if requested resource not found" in new Fixture {
       val service = new NotesServiceMock {
-        override def update: Service[UpdateNote, OutgoingNote, ServiceError] = mockService { _ =>
+        override def update: Service[UpdateNote, OutgoingMerchant, ServiceError] = mockService { _ =>
           Task.now(Left(MissingResource("missing")))
         }
       }
@@ -130,7 +130,7 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
 
     "return INTERNAL_SERVER_ERROR if NotesService failed" in new Fixture {
       val service = new NotesServiceMock {
-        override def update: Service[UpdateNote, OutgoingNote, ServiceError] = mockService { _ =>
+        override def update: Service[UpdateNote, OutgoingMerchant, ServiceError] = mockService { _ =>
           Task.now(Left(ServiceFailed("some err")))
         }
       }
@@ -143,7 +143,7 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
 
     "return BAD_REQUEST if object being updated is not valid" in new Fixture {
       val service = new NotesServiceMock {
-        override def update: Service[UpdateNote, OutgoingNote, ServiceError] = mockService { _ =>
+        override def update: Service[UpdateNote, OutgoingMerchant, ServiceError] = mockService { _ =>
           Task.now(Left(InvalidResource(List("validation error"))))
         }
       }
@@ -221,21 +221,21 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
   }
 
   trait Fixture {
-    def service: NotesService
+    def service: MerchantsService
 
     val uuid = UUID.randomUUID
     val someTime = new DateTime
 
     val scheduler = monix.execution.Scheduler.Implicits.global
 
-    val outgoingNote = OutgoingNote(uuid, "creator", "note", someTime)
+    val outgoingNote = OutgoingMerchant(uuid, "creator", "note", someTime)
 
     // has to be lazy as `service` is not initialized when TestContext constructor is being initialized
     lazy val controller = {
       implicit val profiler = NoopServiceProfiler
       implicit val controllerComponents = stubControllerComponents()
 
-      new NotesController(service, scheduler)
+      new MerchantsController(service, scheduler)
     }
   }
 
