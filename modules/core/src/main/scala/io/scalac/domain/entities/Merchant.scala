@@ -11,6 +11,7 @@ import io.scalac.domain.entities.CommissionType.CommissionType
 import io.scalac.domain.entities.DefaultBillingLanguage.DefaultBillingLanguage
 import io.scalac.domain.entities.NetDays.NetDays
 import io.scalac.domain.entities.PaymentType.PaymentType
+import io.scalac.domain.services.Criteria
 import org.joda.time.DateTime
 import slick.ast.BaseTypedType
 import slick.basic.DatabaseConfig
@@ -165,9 +166,15 @@ class MerchantSlickPostgresRepository (
       companyName.?, virtualBankAccount.?, phone.?, email.?, taxId.?, additionalInfo.?, version.?) <> ((Merchant.fromDbRepr _).tupled, Merchant.toDbRepr)
   }
 
-  def findByCriteria(pagination: Pagination): DBIO[Seq[Merchant]] = {
-    Compiled(tableQuery.drop(pagination.offset).take(pagination.limit)).result
-  }
+  def findByCriteria(criteria: Criteria, pagination: Pagination): DBIO[Seq[Merchant]] = Compiled {
+    tableQuery
+      .filter(column => criteria.paymentType match {
+        case Some(paymentType)  => column.paymentType === paymentType
+        case None               => column.paymentType === column.paymentType // TODO: looks foolish, find better way
+      })
+      .drop(pagination.offset)
+      .take(pagination.limit)
+  }.result
 
 }
 

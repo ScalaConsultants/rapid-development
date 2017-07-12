@@ -7,13 +7,14 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import play.api.libs.json._
 
+import scala.util.Try
+
 object Serializers {
+  def parseDateTime(input: String): Try[DateTime] = Try(DateTime.parse(input, dateTimeFormatPattern))
 
   val dateTimeFormatPattern = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZ")
   private val dateTimeReads = Reads[DateTime](js =>
-    js.validate[String].map[DateTime](dtString =>
-      DateTime.parse(dtString, dateTimeFormatPattern)
-    )
+    js.validate[String].map[DateTime](str => parseDateTime(str).get)
   )
   private val dateTimeWrites: Writes[DateTime] = new Writes[DateTime] {
     def writes(d: DateTime): JsValue = JsString(d.toString(dateTimeFormatPattern))

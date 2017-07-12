@@ -6,10 +6,14 @@ import io.scalac.common.entities.{GenericResponse, PaginatedResponse, Pagination
 import io.scalac.common.logger.Logging
 import io.scalac.common.play._
 import io.scalac.common.services.{InvalidResource, MissingResource, ServiceProfiler}
-import io.scalac.domain.services.MerchantsService
+import io.scalac.domain.entities.{CommissionType, PaymentType}
+import io.scalac.domain.services.{Criteria, MerchantsService}
 import io.scalac.domain.services.transport.{IncomingNote, UpdateNote}
 import monix.execution.Scheduler
+import org.joda.time.DateTime
 import play.api.mvc._
+
+import scala.util.Try
 
 class MerchantsController(
                            merchantsService: MerchantsService,
@@ -24,7 +28,20 @@ class MerchantsController(
 
   def all(limit: Int, offset: Int) = noEntity { implicit request => implicit ctx => implicit corr =>
     val pagination = Pagination(limit, offset)
-    merchantsService.findByCriteria(pagination).runAsync.map {
+    val criteria = {
+      val paymentType     = request.getQueryString("paymentType").flatMap { str =>
+        Try(PaymentType.withName(str)).toOption
+      }
+
+      val commissionType  = request.getQueryString("commissionType").flatMap { str =>
+        Try(CommissionType.withName(str)).toOption
+      }
+
+      val lastInvoiceDate = request.getQueryString("lastInvoiceDate").flatMap(str => parseDateTime(str).toOption)
+      Criteria(paymentType, commissionType, lastInvoiceDate)
+    }
+
+    merchantsService.findByCriteria(criteria, pagination).runAsync.map {
       _.fold(
         otherErrorsHandler,
         merchants => {
