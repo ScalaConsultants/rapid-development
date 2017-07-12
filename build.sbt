@@ -7,7 +7,7 @@ lazy val core = (project in file("modules/core"))
   .settings (
     name := "rapid-development-core",
     flywayLocations := Seq("filesystem:core/conf/db/migration"),
-    libraryDependencies ++= cats ++ monix ++ playJson ++ slick ++ postgres ++ scalatest
+    libraryDependencies ++= cats ++ monix ++ playJson ++ slick ++ postgres ++ shapeless ++ scalatest
   )
 
 lazy val web = (project in file("modules/web"))

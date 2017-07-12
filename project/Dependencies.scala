@@ -34,6 +34,8 @@ object Dependencies {
 
   val pureconfig = Seq("com.github.pureconfig" %% "pureconfig" % Versions.pureConfig)
 
+  val shapeless = Seq("com.chuusai" %% "shapeless" % "2.3.2")
+
   // test deps
   val scalatest = Seq("org.scalatest" %% "scalatest" % "3.0.3" % Test)
 
