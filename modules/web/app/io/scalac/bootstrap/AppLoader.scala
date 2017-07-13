@@ -28,6 +28,11 @@ import scala.util.{Failure, Success, Try}
 
 class AppLoader extends ApplicationLoader {
   def load(context: Context) = {
+
+    LoggerConfigurator(context.environment.classLoader).foreach {
+      _.configure(context.environment, context.initialConfiguration, Map.empty)
+    }
+
     new MyComponents(context).application
   }
 }
