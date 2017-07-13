@@ -66,11 +66,11 @@ class MyComponents(context: Context)
   }
 
   val notesController = new NotesController(notesService, defaultScheduler)
-  val pagesController = new PagesController(notesService, defaultScheduler)
+  val pagesController = new PagesController(notesService, assetsFinder, defaultScheduler)
 
   override lazy val httpErrorHandler: HttpErrorHandler = {
     //router below is used only in dev mode, causes stack overflow for Some(router) anyway
-    new RootHttpErrorHandler(environment, configuration, sourceMapper, router = None)
+    new RootHttpErrorHandler(environment, configuration, sourceMapper, router = None, assetsFinder)
   }
 
   override lazy val httpRequestHandler: HttpRequestHandler = {
@@ -81,7 +81,6 @@ class MyComponents(context: Context)
   override lazy val router: Router = {
     new _root_.router.Routes(
       httpErrorHandler,
-      assets,
       healthCheckController,
       pagesController,
       notesController)

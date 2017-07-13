@@ -1,15 +1,16 @@
 package io.scalac.common.play
 
-import javax.inject._
-
 import scala.concurrent._
+
 import org.slf4j.MarkerFactory
 import play.api._
+import _root_.controllers.AssetsFinder
 import play.api.http.DefaultHttpErrorHandler
 import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.mvc._
 import play.api.routing.Router
+
 import io.scalac.common.core.Correlation
 import io.scalac.common.entities.GenericResponse
 import io.scalac.common.logger.Logging
@@ -19,7 +20,8 @@ class RootHttpErrorHandler(
   env: Environment,
   config: Configuration,
   sourceMapper: Option[SourceMapper],
-  router: Option[Router]
+  router: Option[Router],
+  assetsFinder: AssetsFinder
 )(implicit executionContext: ExecutionContext)
   extends DefaultHttpErrorHandler(env, config, sourceMapper, router)
     with InstrumentedErrorHandler
@@ -33,7 +35,7 @@ class RootHttpErrorHandler(
   }
 
   override def onProdServerError(request: RequestHeader, e: UsefulException): Future[Result] =
-    Future.successful(InternalServerError(views.html.serverError(GenericResponse("Please check logs"))))
+    Future.successful(InternalServerError(views.html.serverError(GenericResponse("Please check logs"))(assetsFinder)))
 
   override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] =
     Future.successful(new Status(statusCode))
