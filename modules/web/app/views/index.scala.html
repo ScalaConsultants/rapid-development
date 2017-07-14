@@ -1,7 +1,7 @@
 @import io.scalac.common.entities.PaginatedResponse
 @import io.scalac.domain.services.transport.OutgoingNote
 
-@(data: PaginatedResponse[OutgoingNote])
+@(data: PaginatedResponse[OutgoingNote])(assets: AssetsFinder)
 
 @innerHtml = {
   <div class="site-wrapper">
@@ -35,4 +35,4 @@
   </div>
 }
 
-@main(innerHtml)
+@main(innerHtml)(assets)

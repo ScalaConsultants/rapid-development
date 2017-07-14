@@ -1,5 +1,7 @@
 package io.scalac.controllers
 
+import controllers.AssetsFinder
+
 import io.scalac.common.auth
 import io.scalac.common.entities.{GenericResponse, PaginatedResponse, Pagination}
 import io.scalac.common.logger.Logging
@@ -11,6 +13,7 @@ import play.api.mvc.{AbstractController, ControllerComponents}
 
 class PagesController (
   notesService: NotesService,
+  assetsFinder: AssetsFinder,
   scheduler: Scheduler
 )(implicit profiler: ServiceProfiler, controllerComponents: ControllerComponents)
   extends AbstractController(controllerComponents) with Logging {
@@ -27,14 +30,14 @@ class PagesController (
         serviceError => {
           val msg = s"Failed due to: $serviceError"
           logger.error(s"${request.path} - $msg")
-          InternalServerError(views.html.serverError(GenericResponse(msg)))
+          InternalServerError(views.html.serverError(GenericResponse(msg))(assetsFinder))
         },
         notes => {
           logger.info(s"${request.path} - successful response")
           val response = PaginatedResponse(
             pagination.increase, notes
           )
-          Ok(views.html.index(response))
+          Ok(views.html.index(response)(assetsFinder))
         }
       )
     }

@@ -1,6 +1,6 @@
 @import io.scalac.common.entities.GenericResponse
 
-@(serverResponse: GenericResponse)
+@(serverResponse: GenericResponse)(assets: AssetsFinder)
 
 @innerHtml = {
   <div class="site-wrapper">
@@ -25,4 +25,4 @@
   </div>
 }
 
-@main(innerHtml)
+@main(innerHtml)(assets)
