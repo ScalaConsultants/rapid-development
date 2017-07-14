@@ -81,6 +81,7 @@ class MyComponents(context: Context)
   override lazy val router: Router = {
     new _root_.router.Routes(
       httpErrorHandler,
+      assets,
       healthCheckController,
       pagesController,
       notesController)
