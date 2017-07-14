@@ -10,12 +10,12 @@ import com.mohiva.play.silhouette.impl.providers.CredentialsProvider
 import monix.cats.monixToCatsMonad
 import monix.eval.Task
 
-import io.scalac.common.auth.User
+import io.scalac.common.auth.AuthUser
 import io.scalac.common.logger.Logging
 import io.scalac.common.services._
 import io.scalac.common.syntax._
 import io.scalac.controllers.auth.{AuthToken, IncomingSignUp}
-import io.scalac.services.UserService
+import io.scalac.domain.entities.User
 
 trait SignUpService {
 
@@ -23,10 +23,11 @@ trait SignUpService {
 }
 
 class DefaultSignUpService(
-  userService: UserService,
+  authUserService: AuthUserService,
   authInfoRepository: AuthInfoRepository, //grrr
   passwordHasherRegistry: PasswordHasherRegistry,
-  authTokenService: AuthTokenService
+  authTokenService: AuthTokenService,
+  clock: Clock
 )(implicit val profiler: ServiceProfiler) extends SignUpService with Logging {
 
   override def signUp: Service[IncomingSignUp, AuthToken, ServiceError] =
@@ -42,21 +43,29 @@ class DefaultSignUpService(
 
       //TODO validate IncomingSignUp data
       val loginInfo = LoginInfo(CredentialsProvider.ID, req.email)
-      Task.deferFutureAction(implicit scheduler => userService.retrieve(loginInfo)).flatMap {
+      Task.deferFutureAction(implicit scheduler => authUserService.retrieve(loginInfo)).flatMap {
         case Some(_) =>
           Task.now(UserExists.asLeft[AuthToken])
 
         case None =>
           val authInfo = passwordHasherRegistry.current.hash(req.password)
-          val user = User(
-            id = UUID.randomUUID(),
+          val now = clock.now
+          val authUser = AuthUser(
             loginInfo = loginInfo,
-            firstName = req.firstName,
-            lastName = req.lastName,
-            email = req.email)
+            user = User (
+              id = Some(UUID.randomUUID()),
+              firstName = req.firstName,
+              lastName = req.lastName,
+              email = req.email,
+              avatarURL = None,
+              createdAt = now,
+              updatedAt = now,
+              version = Some(1)
+              )
+            )
 
           (for {
-            userId    <- userService.save(user).eitherT
+            userId    <- authUserService.save(authUser).eitherT
             _         <- addAuthInfo(loginInfo, authInfo).eitherT
             authToken <- authTokenService.create(userId).eitherT
           } yield AuthToken(authToken)).value

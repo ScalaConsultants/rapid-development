@@ -1,11 +1,9 @@
 package io.scalac.common.play
 
-import io.scalac.common.auth
-import io.scalac.common.auth.ServiceContext
 import io.scalac.common.core.Correlation
 import io.scalac.common.entities.GenericResponse
 import io.scalac.common.logger.Logging
-import io.scalac.common.services.ServiceError
+import io.scalac.common.services._
 import play.api.libs.json.Reads
 import play.api.mvc._
 
@@ -18,7 +16,7 @@ trait ControllerHelper { self: Logging with AbstractController =>
     Future.successful(BadRequest(GenericResponse(msg).asJson))
 
   def noEntity(fun: Request[AnyContent] => ServiceContext => Correlation => Future[Result]): Action[AnyContent] = Action.async(parse.anyContent) { request =>
-    implicit val emptyContext = auth.EmptyContext()
+    implicit val emptyContext = EmptyContext()
     implicit val c = request.attrs(RequestAttributes.Correlation)
 
     logger.info(s"${request.path}")
@@ -27,7 +25,7 @@ trait ControllerHelper { self: Logging with AbstractController =>
   }
 
   def withParsedEntity[A : Reads](fun: A => Request[AnyContent] => ServiceContext => Correlation => Future[Result]): Action[AnyContent] = Action.async(parse.anyContent) { request =>
-    implicit val emptyContext = auth.EmptyContext()
+    implicit val emptyContext = EmptyContext()
     implicit val c = request.attrs(RequestAttributes.Correlation)
 
     logger.info(s"${request.path}")

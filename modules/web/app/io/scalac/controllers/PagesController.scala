@@ -2,11 +2,10 @@ package io.scalac.controllers
 
 import controllers.AssetsFinder
 
-import io.scalac.common.auth
 import io.scalac.common.entities.{GenericResponse, PaginatedResponse, Pagination}
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.RequestAttributes
-import io.scalac.common.services.ServiceProfiler
+import io.scalac.common.services._
 import io.scalac.domain.services.NotesService
 import monix.execution.Scheduler
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -21,7 +20,7 @@ class PagesController (
   private implicit val schedulerImpl = scheduler
 
   def index() = Action.async(parse.default) { request =>
-    implicit val emptyContext = auth.EmptyContext()
+    implicit val emptyContext = EmptyContext()
     implicit val c = request.attrs(RequestAttributes.Correlation)
     logger.info(s"${request.path}")
     val pagination = Pagination(limit = 5, offset = 0)

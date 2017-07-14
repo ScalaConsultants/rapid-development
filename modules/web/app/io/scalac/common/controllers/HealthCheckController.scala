@@ -1,6 +1,5 @@
 package io.scalac.common.controllers
 
-import io.scalac.common.auth
 import io.scalac.common.logger.Logging
 import io.scalac.common.play.RequestAttributes
 import io.scalac.common.services.{ExternalHealthCheckResponse, HealthCheckRequest, HealthCheckResponse, _}
@@ -21,7 +20,7 @@ class HealthCheckController (
   implicit val ex: Scheduler = scheduler
 
   def healthCheck(diagnostics: Boolean): Action[AnyContent] = Action.async(parse.default) { request =>
-    implicit val emptyContext = auth.EmptyContext()
+    implicit val emptyContext = EmptyContext()
     implicit val c = request.attrs(RequestAttributes.Correlation)
     logger.info(s"${request.path} - getting app status")
     val future = healthCheckServices.healthCheck(HealthCheckRequest(diagnostics)).runAsync
