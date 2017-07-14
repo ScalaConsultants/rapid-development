@@ -8,6 +8,8 @@ import io.scalac.common.core.Correlation
 
 package object services {
 
+  //TODO put many of things here in to core and here leave only service related things
+
   sealed trait Error extends Product with Serializable
 
   //TODO still not sure if it actually makes sense
