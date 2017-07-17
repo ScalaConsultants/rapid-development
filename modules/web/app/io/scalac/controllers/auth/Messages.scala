@@ -6,5 +6,3 @@ final case class IncomingSignUp(
   email: String,
   password: String
 )
-
-final case class AuthToken(token: String)

@@ -11,17 +11,16 @@ import com.mohiva.play.silhouette.impl.authenticators._
 import com.mohiva.play.silhouette.impl.providers.OAuth2Info
 import com.mohiva.play.silhouette.impl.util._
 import com.mohiva.play.silhouette.password.BCryptPasswordHasher
-import com.mohiva.play.silhouette.persistence.daos.DelegableAuthInfoDAO
+import com.mohiva.play.silhouette.persistence.daos.{DelegableAuthInfoDAO, InMemoryAuthInfoDAO}
 import com.mohiva.play.silhouette.persistence.repositories.{CacheAuthenticatorRepository, DelegableAuthInfoRepository}
 import play.api.cache.ehcache.EhCacheComponents
-import play.api.mvc.{BodyParsers, PlayBodyParsers}
+import play.api.mvc.BodyParsers
 import play.api.{BuiltInComponents, Configuration, mvc}
 import pureconfig.ConfigConvert.{catchReadError, viaNonEmptyString}
 import pureconfig.{ConfigConvert, loadConfigOrThrow}
 
 import io.scalac.common.auth.{BearerTokenEnv, CustomSecuredErrorHandler, CustomUnsecuredErrorHandler}
-import io.scalac.domain.dao.UsersDao
-import io.scalac.services.auth.{AuthUserService, DefaultAuthUsersService}
+import io.scalac.services.auth.{AuthUserService, DefaultSignUpService}
 
 trait SilhouetteComponents
   extends EhCacheComponents
@@ -30,9 +29,9 @@ trait SilhouetteComponents
     with UserAwareActionComponents
     with SecuredErrorHandlerComponents
     with UnsecuredErrorHandlerComponents {
-
-  val playBodyParsers: PlayBodyParsers
-  val usersDao: UsersDao
+  self: DatabaseComponents
+    with ServicesComponents
+    with BuiltInComponents =>
 
   override lazy val securedErrorHandler: SecuredErrorHandler = new CustomSecuredErrorHandler()
   override lazy val unsecuredErrorHandler: UnsecuredErrorHandler = new CustomUnsecuredErrorHandler()
@@ -51,16 +50,17 @@ trait SilhouetteComponents
   val silhouetteEventBus = new EventBus()
   val silhouetteClock = Clock()
 
-  val usersService = new DefaultAuthUsersService(usersDao)
+  val passwordInfoRepo = new InMemoryAuthInfoDAO[PasswordInfo]
+  val oAuth2InfoRepo = new InMemoryAuthInfoDAO[OAuth2Info]
+  val authInfoRepository = provideAuthInfoRepository(passwordInfoRepo, oAuth2InfoRepo)
+
+  val signUpService = new DefaultSignUpService(authUsersService, authInfoRepository, passwordHasherRegistry, authTokenService, appClock)
 
   val silhouette = {
     val authenticatorService = provideAuthenticatorService(idGenerator, cacheLayer, configuration, silhouetteClock)
-    val env = provideEnvironment(usersService, authenticatorService, silhouetteEventBus)
+    val env = provideEnvironment(authUsersService, authenticatorService, silhouetteEventBus)
     new SilhouetteProvider[BearerTokenEnv](env, securedAction, unsecuredAction, userAwareAction)
   }
-
-  //TODO
-//  val authInfoRepository = provideAuthInfoRepository()
 
   def provideEnvironment(
     userService: AuthUserService,

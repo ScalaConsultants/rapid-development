@@ -16,9 +16,12 @@ import io.scalac.controllers.Serializers._
 
 class SignUpController (
   silhouette: Silhouette[BearerTokenEnv],
-  signUpService: SignUpService
-)(implicit profiler: ServiceProfiler, controllerComponents: ControllerComponents, scheduler: Scheduler)
+  signUpService: SignUpService,
+  scheduler: Scheduler
+)(implicit profiler: ServiceProfiler, controllerComponents: ControllerComponents)
   extends AbstractController(controllerComponents) with Logging with ControllerHelper {
+
+  implicit val ex = scheduler
 
   //TODO provide support with withParsedEntity
   def signUp = silhouette.UnsecuredAction.async(parse.json) { implicit request: Request[JsValue] =>
@@ -38,9 +41,11 @@ class SignUpController (
                 logger.info(s"${request.path} - user [${incomingSignUp.email}] already exists")
                 Ok(GenericResponse("AuthUser exists").asJson) //FIXME exposing data...
             }.orElse(otherErrorsHandler),
-            generatedToken =>
+            generatedToken => {
 //              silhouette.env.eventBus.publish(SignUpEvent(user, request))
+              logger.info("Successfully generated token for new user")
               Ok(generatedToken.asJson)
+            }
           )
         )
 

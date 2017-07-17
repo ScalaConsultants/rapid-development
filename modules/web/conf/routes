@@ -11,6 +11,10 @@ GET     /healthcheck                               io.scalac.common.controllers.
 # Static views
 GET     /                                          io.scalac.controllers.PagesController.index
 
+# Authorization
+
+POST    /signup                                    io.scalac.controllers.auth.SignUpController.signUp
+
 # Notes
 GET     /notes                                     io.scalac.controllers.NotesController.all(limit: Int, offset: Int)
 GET     /notes/:noteId                             io.scalac.controllers.NotesController.find(noteId: java.util.UUID)

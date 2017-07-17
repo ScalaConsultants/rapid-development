@@ -11,10 +11,11 @@ import monix.cats.monixToCatsMonad
 import monix.eval.Task
 
 import io.scalac.common.auth.AuthUser
+import io.scalac.common.core.{AuthToken, UserId}
 import io.scalac.common.logger.Logging
 import io.scalac.common.services._
 import io.scalac.common.syntax._
-import io.scalac.controllers.auth.{AuthToken, IncomingSignUp}
+import io.scalac.controllers.auth.IncomingSignUp
 import io.scalac.domain.entities.User
 
 trait SignUpService {
@@ -27,7 +28,7 @@ class DefaultSignUpService(
   authInfoRepository: AuthInfoRepository, //grrr
   passwordHasherRegistry: PasswordHasherRegistry,
   authTokenService: AuthTokenService,
-  clock: Clock
+  clock: AppClock
 )(implicit val profiler: ServiceProfiler) extends SignUpService with Logging {
 
   override def signUp: Service[IncomingSignUp, AuthToken, ServiceError] =
@@ -53,7 +54,7 @@ class DefaultSignUpService(
           val authUser = AuthUser(
             loginInfo = loginInfo,
             user = User (
-              id = Some(UUID.randomUUID()),
+              id = Some(UserId(UUID.randomUUID())),
               firstName = req.firstName,
               lastName = req.lastName,
               email = req.email,
@@ -65,10 +66,10 @@ class DefaultSignUpService(
             )
 
           (for {
-            userId    <- authUserService.save(authUser).eitherT
+            userId    <- authUserService.store(authUser).eitherT
             _         <- addAuthInfo(loginInfo, authInfo).eitherT
             authToken <- authTokenService.create(userId).eitherT
-          } yield AuthToken(authToken)).value
+          } yield authToken).value
       }
     }
 }
