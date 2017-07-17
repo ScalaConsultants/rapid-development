@@ -31,6 +31,7 @@ trait SilhouetteComponents
     with UnsecuredErrorHandlerComponents {
   self: DatabaseComponents
     with ServicesComponents
+    with ExecutionComponents
     with BuiltInComponents =>
 
   override lazy val securedErrorHandler: SecuredErrorHandler = new CustomSecuredErrorHandler()

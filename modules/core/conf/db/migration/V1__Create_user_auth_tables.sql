@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS users (
   first_name VARCHAR(50) NOT NULL,
   last_name VARCHAR(50) NOT NULL,
   email VARCHAR(50) NOT NULL UNIQUE,
-  avatar_url VARCHAR(200) NOT NULL,
+  avatar_url VARCHAR(200),
   created_at TIMESTAMPTZ NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL,
   version INTEGER NOT NULL
@@ -14,7 +14,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_u ON users(email);
 CREATE TABLE IF NOT EXISTS authentication_providers (
   id UUID PRIMARY KEY,
   provider_id VARCHAR(50) NOT NULL,
-  provider_key VARCHAR(200) NOT NULL,
+  provider_key VARCHAR(200) NOT NULL,--TODO FK users.email
   created_at TIMESTAMPTZ NOT NULL,
   updated_at TIMESTAMPTZ NOT NULL,
   version INTEGER NOT NULL
@@ -24,7 +24,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_auth_prov_id_key_u ON authentication_provi
 
 CREATE TABLE IF NOT EXISTS tokens (
   id UUID PRIMARY KEY,
-  user_id UUID NOT NULL UNIQUE,
+  user_id UUID NOT NULL UNIQUE, --TODO FK users.id
   expiry TIMESTAMPTZ NOT NULL,
   created_at TIMESTAMPTZ NOT NULL
 );

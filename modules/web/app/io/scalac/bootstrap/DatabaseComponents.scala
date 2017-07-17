@@ -28,7 +28,7 @@ trait DatabaseComponents extends Logging {
 
   val usersDao = new SlickUsersDao(usersRepo, dbExecutor)
   val authUsersDao = new SlickAuthUsersDao(usersRepo, authUsersRepo, dbExecutor)
-  val authTokenDao = new SlickAuthTokenDao(tokensRepo, usersRepo, dbExecutor)
+  val authTokenDao = new SlickAuthTokenDao(tokensRepo, usersRepo, appClock, dbExecutor)
   val notesDao = new SlickNotesDao(notesRepo, dbExecutor)
 
   private def providePostgresDatabaseProfile(lifecycle: ApplicationLifecycle,

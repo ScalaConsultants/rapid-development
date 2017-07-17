@@ -27,7 +27,7 @@ final case class User(
 
 class UsersSlickPostgresRepository (
   val dbConfig: DatabaseConfig[PostgresJdbcProfile]
-) extends VersionedRepository[User, UserId, Int](dbConfig.profile) {
+) extends VersionedRepository[User, UserId, Int](dbConfig.profile) with CommonMappers {
 
   import dbConfig.profile.api._
   override type TableType = UsersTable

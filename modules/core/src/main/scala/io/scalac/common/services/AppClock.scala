@@ -7,9 +7,8 @@ trait AppClock {
   def now: DateTime
 }
 
-object AppClock {
+class JodaAppClock extends AppClock {
 
-  def apply(dateTimeZone: DateTimeZone) = new AppClock {
-    def now = DateTime.now(dateTimeZone)
-  }
+  override def now: DateTime =
+    DateTime.now(DateTimeZone.UTC)
 }

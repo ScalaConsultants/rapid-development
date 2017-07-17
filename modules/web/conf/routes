@@ -13,7 +13,7 @@ GET     /                                          io.scalac.controllers.PagesCo
 
 # Authorization
 
-POST    /signup                                    io.scalac.controllers.auth.SignUpController.signUp
+POST    /auth/signup                               io.scalac.controllers.auth.SignUpController.signUp
 
 # Notes
 GET     /notes                                     io.scalac.controllers.NotesController.all(limit: Int, offset: Int)

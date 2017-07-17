@@ -4,8 +4,8 @@ import org.joda.time.DateTime
 
 import io.scalac.common.core.{AuthToken, TokenId}
 import io.scalac.common.db.DBExecutor
-import io.scalac.common.services.DatabaseResponse
-import io.scalac.domain.entities.{CommonMappers, TokensSlickPostgresRepository, UsersSlickPostgresRepository}
+import io.scalac.common.services.{AppClock, DatabaseResponse}
+import io.scalac.domain.entities.{CommonMappers, Token, TokensSlickPostgresRepository, UsersSlickPostgresRepository}
 
 trait AuthTokenDao {
 
@@ -25,10 +25,10 @@ trait AuthTokenDao {
   /**
     * Saves a token.
     *
-    * @param token The token to save.
+    * @param authToken The token to save.
     * @return The saved token.
     */
-  def save(token: AuthToken): DatabaseResponse[AuthToken]
+  def save(authToken: AuthToken): DatabaseResponse[AuthToken]
   /**
     * Removes the token for the given ID.
     *
@@ -41,6 +41,7 @@ trait AuthTokenDao {
 class SlickAuthTokenDao(
   tokensRepo: TokensSlickPostgresRepository,
   usersRepo: UsersSlickPostgresRepository,
+  appClock: AppClock,
   dbExecutor: DBExecutor
 ) extends AuthTokenDao with CommonMappers {
 
@@ -61,7 +62,14 @@ class SlickAuthTokenDao(
 
   override def findExpired(dateTime: DateTime): DatabaseResponse[Seq[AuthToken]] = ???
 
-  override def save(token: AuthToken): DatabaseResponse[AuthToken] = ???
+  override def save(authToken: AuthToken): DatabaseResponse[AuthToken] = {
+    tokensRepo.save(Token(
+      id = Some(authToken.token),
+      userId = authToken.userId,
+      expiry = authToken.expiry,
+      createdAt = appClock.now
+    )).map(_ => authToken)
+  }
 
   override def remove(id: TokenId): DatabaseResponse[Unit] = ???
 }
