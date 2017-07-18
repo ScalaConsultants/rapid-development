@@ -7,8 +7,8 @@ import org.joda.time.DateTime
 package object core {
 
   final case class UserId(id: UUID) extends AnyVal
-
   final case class TokenId(id: UUID) extends AnyVal
+  final case class AuthenticationProviderId(id: UUID) extends AnyVal
 
   final case class AuthToken(
     token: TokenId,

@@ -2,7 +2,7 @@ package io.scalac.domain.entities
 
 import java.util.UUID
 
-import io.scalac.common.core.{TokenId, UserId}
+import io.scalac.common.core.{AuthenticationProviderId, TokenId, UserId}
 
 trait CommonMappers {
 
@@ -13,4 +13,7 @@ trait CommonMappers {
 
   implicit val userIdMapper: BaseColumnType[UserId] =
     MappedColumnType.base[UserId, UUID](_.id, UserId)
+
+  implicit val authenticationProviderIdMapper: BaseColumnType[AuthenticationProviderId] =
+    MappedColumnType.base[AuthenticationProviderId, UUID](_.id, AuthenticationProviderId)
 }

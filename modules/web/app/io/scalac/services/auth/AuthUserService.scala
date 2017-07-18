@@ -10,7 +10,7 @@ import com.mohiva.play.silhouette.impl.exceptions.IdentityNotFoundException
 import monix.execution.Scheduler
 
 import io.scalac.common.auth.AuthUser
-import io.scalac.common.core.{Correlation, UserId}
+import io.scalac.common.core.{AuthenticationProviderId, Correlation, UserId}
 import io.scalac.common.logger.Logging
 import io.scalac.common.services._
 import io.scalac.common.syntax._
@@ -47,7 +47,7 @@ class DefaultAuthUsersService(
 
         val now = clock.now
         val authorizationProvider = AuthenticationProvider(
-          id = Some(UUID.randomUUID()),
+          id = Some(AuthenticationProviderId(UUID.randomUUID())),
           providerId = req.loginInfo.providerID,
           providerKey = req.loginInfo.providerKey,
           createdAt = now,

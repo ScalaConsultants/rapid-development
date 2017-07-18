@@ -33,13 +33,12 @@ class SignUpController (
     request.body.validate[IncomingSignUp].fold(
       invalid => badRequestFuture(s"Invalid body: ${invalid.mkString(" ")}"),
       incomingSignUp => {
-
         signUpService.signUp(incomingSignUp).runAsync.map(
           _.fold(
             handler {
               case UserExists =>
                 logger.info(s"${request.path} - user [${incomingSignUp.email}] already exists")
-                Ok(GenericResponse("AuthUser exists").asJson) //FIXME exposing data...
+                Ok(GenericResponse("AuthUser exists").asJson)
             }.orElse(otherErrorsHandler),
             generatedToken => {
 //              silhouette.env.eventBus.publish(SignUpEvent(user, request))

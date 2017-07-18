@@ -1,11 +1,13 @@
 package io.scalac.common.db
 
+import scala.concurrent.Future
+
 import cats.syntax.either._
+
 import io.scalac.common.services.{DatabaseCallFailed, DatabaseError, DatabaseResponse}
 import monix.eval.Task
 import monix.execution.Scheduler
 import slick.basic.DatabaseConfig
-
 import scala.language.implicitConversions
 
 class DBExecutor(
@@ -41,4 +43,8 @@ class DBExecutor(
         DatabaseCallFailed(ex.getMessage).asLeft[T]
       }
   }
+
+  def evalFuture[T](databaseOperation: DBIO[T]): Future[T] = {
+      dbConfig.db.run(databaseOperation)
+    }
 }

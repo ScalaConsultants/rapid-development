@@ -12,7 +12,7 @@ import io.scalac.common.core.Correlation
 import io.scalac.common.db.{DBExecutor, PostgresJdbcProfile}
 import io.scalac.common.logger.Logging
 import io.scalac.domain.dao.{SlickAuthTokenDao, SlickAuthUsersDao, SlickNotesDao, SlickUsersDao}
-import io.scalac.domain.entities.{AuthenticationProvidersSlickPostgresRepository, NotesSlickPostgresRepository, TokensSlickPostgresRepository, UsersSlickPostgresRepository}
+import io.scalac.domain.entities._
 
 trait DatabaseComponents extends Logging {
   self: BuiltInComponents
@@ -25,6 +25,8 @@ trait DatabaseComponents extends Logging {
   val notesRepo = new NotesSlickPostgresRepository(dbConfig)
   val authUsersRepo = new AuthenticationProvidersSlickPostgresRepository(dbConfig)
   val tokensRepo = new TokensSlickPostgresRepository(dbConfig)
+  val authProviderRepo = new AuthenticationProvidersSlickPostgresRepository(dbConfig)
+  val passInfoRepo = new PasswordInformationSlickPostgresRepository(dbConfig)
 
   val usersDao = new SlickUsersDao(usersRepo, dbExecutor)
   val authUsersDao = new SlickAuthUsersDao(usersRepo, authUsersRepo, dbExecutor)
