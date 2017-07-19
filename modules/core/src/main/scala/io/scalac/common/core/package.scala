@@ -9,7 +9,6 @@ package object core {
   final case class UserId(id: UUID) extends AnyVal
   final case class TokenId(id: UUID) extends AnyVal
   final case class AuthenticationProviderId(id: UUID) extends AnyVal
-
   final case class AuthToken(
     token: TokenId,
     userId: UserId,
@@ -28,8 +27,8 @@ package object core {
   object Correlation {
 
     val NotRequired: UUID = UUID.fromString("00000000-0000-0000-0000-00000000000")
-    val HeaderCorrelationId: String = "x-correlation-id"
-    val HeaderUserId: String = "x-user-id"
+    val HeaderCorrelationId: String = "X-Correlation-Id"
+    val HeaderUserId: String = "X-User-Id"
 
     def withNew: Correlation = Correlation(CorrelationId(generateUuid), userId = None)
 

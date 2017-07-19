@@ -11,11 +11,11 @@ import io.scalac.common.logger.Logging
 import io.scalac.common.play._
 import io.scalac.common.play.serializers.Serializers._
 import io.scalac.common.services._
-import io.scalac.services.auth.{SignInRequest, SigningService, SingUpRequest}
+import io.scalac.services.auth.{SignInRequest, AuthorizationService, SingUpRequest}
 
-class SigningController (
+class AuthorizationController (
   silhouette: Silhouette[BearerTokenEnv],
-  signUpService: SigningService,
+  authorizationService: AuthorizationService,
   scheduler: Scheduler
 )(implicit profiler: ServiceProfiler, controllerComponents: ControllerComponents)
   extends AbstractController(controllerComponents) with Logging with ControllerHelper {
@@ -32,7 +32,7 @@ class SigningController (
     request.body.validate[IncomingSignUp].fold(
       invalid => badRequestFuture(s"Invalid body: ${invalid.mkString(" ")}"),
       incomingSignUp => {
-        signUpService.signUp(SingUpRequest(incomingSignUp, request)).runAsync.map(
+        authorizationService.signUp(SingUpRequest(incomingSignUp, request)).runAsync.map(
           _.fold(
             handler[AuthError] {
               case UserUnauthorized =>
@@ -62,7 +62,7 @@ class SigningController (
     request.body.validate[IncomingSignIn].fold(
       invalid => badRequestFuture(s"Invalid body: ${invalid.mkString(" ")}"),
       data => {
-        signUpService.signIn(SignInRequest(data, request)).runAsync.map(
+        authorizationService.signIn(SignInRequest(data, request)).runAsync.map(
           _.fold(
             handler[AuthError] {
               case UserUnauthorized =>
@@ -81,6 +81,18 @@ class SigningController (
 
       }
     )
+  }
+
+  def signOut = silhouette.SecuredAction.async { implicit request =>
+//    silhouette.env.eventBus.publish(LogoutEvent(request.identity, request))
+    implicit val c = request.attrs(RequestAttributes.Correlation)
+    implicit val userContext = ServiceContext(c, Map.empty, Some(request.identity.user), None)
+
+    logger.info(s"${request.path}")
+    silhouette.env.authenticatorService.discard(request.authenticator, Ok).map { result =>
+      logger.info(s"Successfully logged out user ${request.identity.user.id.get}")
+      result
+    }
   }
 
 }

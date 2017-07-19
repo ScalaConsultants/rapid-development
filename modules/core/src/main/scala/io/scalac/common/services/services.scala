@@ -10,8 +10,6 @@ import io.scalac.common.core.Correlation
 
 package object services {
 
-  //TODO put many of things here in to core and here leave only service related things
-
   sealed trait Error extends Product with Serializable
 
   //TODO still not sure if it actually makes sense
@@ -43,14 +41,14 @@ package object services {
   }
 
   //authenticated user
-  sealed trait Subject
+  trait Subject
 
   //user on behalf subject is working, a subject is ordinary user or admin
-  sealed trait Delegate
+  trait Delegate
 
   final case class ServiceContext(
     correlation: Correlation,
-    properties: Map[String, String], //TODO Consider changing to expendable case class
+    properties: Map[String, String],
     subject: Option[Subject],
     delegate: Option[Delegate]
   )
@@ -66,7 +64,7 @@ package object services {
   type Context[_] = ServiceContext
   type Logger[_] = AppLogger
 
-  type ServiceResponse[R] = Task[Either[ServiceError, R]] //TODO or () => ...
+  type ServiceResponse[R] = Task[Either[ServiceError, R]]
   type ExternalResponse[R] = Task[Either[ExternalServiceError, R]]
   type DatabaseResponse[R] = Task[Either[DatabaseError, R]]
 

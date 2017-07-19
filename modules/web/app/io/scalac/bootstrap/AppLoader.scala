@@ -12,7 +12,7 @@ import play.filters.HttpFiltersComponents
 import io.scalac.common.controllers.HealthCheckController
 import io.scalac.common.play.{RootHttpErrorHandler, RootRequestHandler}
 import io.scalac.common.services.{DatabaseHealthCheck, HealthCheckServicesImpl}
-import io.scalac.controllers.auth.SigningController
+import io.scalac.controllers.auth.AuthorizationController
 import io.scalac.controllers.{NotesController, PagesController}
 
 class AppLoader extends ApplicationLoader {
@@ -47,7 +47,7 @@ class PlayComponents(context: Context)
   val notesController = new NotesController(notesService, defaultScheduler)
   val pagesController = new PagesController(notesService, assetsFinder, defaultScheduler)
 
-  val signUpController = new SigningController(silhouette, signUpService, defaultScheduler)
+  val signUpController = new AuthorizationController(silhouette, signUpService, defaultScheduler)
 
   override lazy val httpErrorHandler: HttpErrorHandler = {
     //router below is used only in dev mode, causes stack overflow for Some(router) anyway

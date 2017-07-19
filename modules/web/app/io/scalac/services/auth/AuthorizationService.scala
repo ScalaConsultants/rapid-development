@@ -21,13 +21,13 @@ import io.scalac.common.services._
 import io.scalac.common.syntax._
 import io.scalac.domain.entities.User
 
-trait SigningService {
+trait AuthorizationService {
 
   def signUp: Service[SingUpRequest, AuthorizationToken, AuthError]
   def signIn: Service[SignInRequest, AuthorizationToken, AuthError]
 }
 
-class DefaultSigningService(
+class DefaultAuthorizationService(
   authUserService: AuthUserService,
   authInfoRepository: AuthInfoRepository, //grrr
   passwordHasherRegistry: PasswordHasherRegistry,
@@ -36,10 +36,10 @@ class DefaultSigningService(
   silhouette: Silhouette[BearerTokenEnv],
   silhouetteConfig: SilhouetteConfig,
   clock: AppClock
-)(implicit val profiler: ServiceProfiler) extends SigningService with Logging {
+)(implicit val profiler: ServiceProfiler) extends AuthorizationService with Logging {
 
   override def signUp: Service[SingUpRequest, AuthorizationToken, AuthError] =
-    Service("io.scalac.services.auth.DefaultSigningService.signUp") { req => implicit ctx =>
+    Service("io.scalac.services.auth.DefaultAuthorizationService.signUp") { req => implicit ctx =>
 
       implicit val rh = req.requestHeader
       implicit val c = ctx.correlation
@@ -87,7 +87,7 @@ class DefaultSigningService(
     }
 
   override def signIn: Service[SignInRequest, AuthorizationToken, AuthError] =
-    Service("io.scalac.services.auth.DefaultSigningService.signIn") { req => implicit ctx =>
+    Service("io.scalac.services.auth.DefaultAuthorizationService.signIn") { req => implicit ctx =>
 
       implicit val reqHeader = req.requestHeader
       implicit val c = ctx.correlation

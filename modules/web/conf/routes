@@ -12,8 +12,9 @@ GET     /healthcheck                               io.scalac.common.controllers.
 GET     /                                          io.scalac.controllers.PagesController.index
 
 # Authorization
-POST    /auth/signup                               io.scalac.controllers.auth.SigningController.signUp
-POST    /auth/signin                               io.scalac.controllers.auth.SigningController.signIn
+POST    /auth/signup                               io.scalac.controllers.auth.AuthorizationController.signUp
+POST    /auth/signin                               io.scalac.controllers.auth.AuthorizationController.signIn
+POST    /auth/signout                              io.scalac.controllers.auth.AuthorizationController.signOut
 
 # Notes
 GET     /notes                                     io.scalac.controllers.NotesController.all(limit: Int, offset: Int)

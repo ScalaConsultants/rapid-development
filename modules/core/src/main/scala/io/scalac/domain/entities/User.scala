@@ -8,6 +8,7 @@ import slick.basic.DatabaseConfig
 
 import io.scalac.common.core.UserId
 import io.scalac.common.db.PostgresJdbcProfile
+import io.scalac.common.services.Subject
 
 final case class User(
   override val id: Option[UserId],
@@ -19,7 +20,7 @@ final case class User(
   createdAt: DateTime,
   updatedAt: DateTime,
   override val version: Option[Int]
-) extends VersionedEntity[User, UserId, Int] {
+) extends VersionedEntity[User, UserId, Int] with Subject {
 
   override def withId(id: UserId): User = this.copy(id = Some(id))
   override def withVersion(version: Int): User = this.copy(version = Some(version))

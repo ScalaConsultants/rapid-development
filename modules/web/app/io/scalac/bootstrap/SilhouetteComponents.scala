@@ -19,7 +19,7 @@ import pureconfig.{ConfigConvert, loadConfigOrThrow}
 
 import io.scalac.bootstrap.config.SilhouetteConfig
 import io.scalac.common.auth.{BearerTokenEnv, CustomSecuredErrorHandler, CustomUnsecuredErrorHandler}
-import io.scalac.services.auth.{AuthUserService, DefaultSigningService, DelegablePasswordInfoDao}
+import io.scalac.services.auth.{AuthUserService, DefaultAuthorizationService, DelegablePasswordInfoDao}
 
 trait SilhouetteComponents
   extends EhCacheComponents
@@ -68,7 +68,7 @@ trait SilhouetteComponents
     new SilhouetteProvider[BearerTokenEnv](env, securedAction, unsecuredAction, userAwareAction)
   }
 
-  val signUpService = new DefaultSigningService(authUsersService, authInfoRepository, passwordHasherRegistry,
+  val signUpService = new DefaultAuthorizationService(authUsersService, authInfoRepository, passwordHasherRegistry,
     authTokenService, credentialsProvider, silhouette, silhouetteConfig, appClock)
 
   def provideEnvironment(
@@ -95,7 +95,7 @@ trait SilhouetteComponents
 
     val config = loadConfigOrThrow[BearerTokenAuthenticatorSettings](configuration.underlying.getConfig("silhouette.authenticator"))
 
-    //cached, shouldn't be a problem even for multiple app instances
+    //TODO cached, shouldn't be a problem even for multiple app instances... OR! for each instance new token might be generated
     //https://www.silhouette.rocks/v5.0/docs/authenticator
     val authenticatorRepository = new CacheAuthenticatorRepository[BearerTokenAuthenticator](cacheLayer)
 
