@@ -19,7 +19,7 @@ import io.scalac.domain.entities.AuthenticationProvider
 
 trait AuthUserService extends IdentityService[AuthUser] {
 
-  def store: Service[AuthUser, UserId, ServiceError]
+  def store: Service[AuthUser, UserId, AuthError]
 }
 
 class DefaultAuthUsersService(
@@ -41,7 +41,7 @@ class DefaultAuthUsersService(
     ))
   }
 
-  override def store: Service[AuthUser, UserId, ServiceError] =
+  override def store: Service[AuthUser, UserId, AuthError] =
     Service("io.scalac.services.auth.DefaultAuthUsersService.store") { req =>
       _ =>
 
@@ -54,7 +54,7 @@ class DefaultAuthUsersService(
           updatedAt = now,
           version = Some(1)
         )
-        authUsersDao.create(req.user, authorizationProvider).toServiceResponse
+        authUsersDao.create(req.user, authorizationProvider).toAuthResponse
     }
 
 }

@@ -6,3 +6,9 @@ final case class IncomingSignUp(
   email: String,
   password: String
 )
+
+final case class IncomingSignIn(
+  email: String,
+  password: String,
+  rememberMe: Boolean
+)

@@ -22,7 +22,7 @@ class DBExecutor(
     * to <i>global</i> execution context.
     */
   implicit def executeOperation[T](databaseOperation: DBIO[T]): DatabaseResponse[T] = {
-    Task.fork(Task.fromFuture(dbConfig.db.run(databaseOperation)), scheduler)
+    Task.fork(Task.deferFuture(dbConfig.db.run(databaseOperation)), scheduler)
       .map(_.asRight[DatabaseError])
       .asyncBoundary
       .onErrorHandle { ex =>
@@ -36,7 +36,7 @@ class DBExecutor(
     * to <i>global</i> execution context.
     */
   def executeTransactionally[T](databaseOperation: DBIO[T]): DatabaseResponse[T] = {
-    Task.fork(Task.fromFuture(dbConfig.db.run(databaseOperation.transactionally)), scheduler)
+    Task.fork(Task.deferFuture(dbConfig.db.run(databaseOperation.transactionally)), scheduler)
       .map(_.asRight[DatabaseError])
       .asyncBoundary
       .onErrorHandle { ex =>

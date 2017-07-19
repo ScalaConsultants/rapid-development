@@ -38,9 +38,9 @@ trait ControllerHelper { self: Logging with AbstractController =>
     )).getOrElse(badRequestFuture("Body is a not a correct JSON"))
   }
 
-  def handler(pf: PartialFunction[ServiceError, Result]): PartialFunction[ServiceError, Result] = pf
+  def handler[L](pf: PartialFunction[L, Result]): PartialFunction[L, Result] = pf
 
-  def otherErrorsHandler[T](implicit request: Request[T], corr: Correlation): PartialFunction[ServiceError, Result] = {
+  def otherErrorsHandler[L, T](implicit request: Request[T], corr: Correlation): PartialFunction[L, Result] = {
     case serviceError =>
       val msg = s"Failed due to: $serviceError"
       logger.error(s"${request.path} - $msg")

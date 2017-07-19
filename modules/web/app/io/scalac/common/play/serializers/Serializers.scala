@@ -2,7 +2,6 @@ package io.scalac.common.play.serializers
 
 import java.util.UUID
 
-import io.scalac.common.entities.{GenericResponse, Pagination}
 import scala.language.implicitConversions
 import scala.util.Try
 
@@ -10,8 +9,9 @@ import org.joda.time.DateTime
 import org.joda.time.format.DateTimeFormat
 import play.api.libs.json._
 
-import io.scalac.common.core.{AuthToken, TokenId, UserId}
-import io.scalac.controllers.auth.IncomingSignUp
+import io.scalac.common.core.{TokenId, UserId}
+import io.scalac.common.entities.{GenericResponse, Pagination}
+import io.scalac.controllers.auth.{IncomingSignIn, IncomingSignUp}
 
 object Serializers {
 
@@ -44,7 +44,7 @@ object Serializers {
   }
 
   implicit val incomingSignUpFormat = Json.format[IncomingSignUp]
-  implicit val authTokenFormat = Json.format[AuthToken]
+  implicit val incomingSignInFormat = Json.format[IncomingSignIn]
 
   implicit class JsonImplicits[T: OWrites](obj: T) {
 

@@ -5,7 +5,7 @@ import java.util.UUID
 import io.scalac.common.entities.{GenericResponse, PaginatedResponse, Pagination}
 import io.scalac.common.logger.Logging
 import io.scalac.common.play._
-import io.scalac.common.services.{InvalidResource, MissingResource, ServiceProfiler}
+import io.scalac.common.services.{InvalidResource, MissingResource, ServiceError, ServiceProfiler}
 import io.scalac.domain.services.NotesService
 import io.scalac.domain.services.transport.{IncomingNote, UpdateNote}
 import monix.execution.Scheduler
@@ -56,7 +56,7 @@ class NotesController (
   def update(noteId: UUID) = withParsedEntity[IncomingNote] { noteToUpdate => implicit request => implicit ctx => implicit corr =>
     notesService.update(UpdateNote(noteId, noteToUpdate)).runAsync.map {
       _.fold (
-        handler {
+        handler[ServiceError] {
           case MissingResource(msg) =>
             logger.info(s"${request.path} - $msg")
             NotFound(GenericResponse(msg).asJson)

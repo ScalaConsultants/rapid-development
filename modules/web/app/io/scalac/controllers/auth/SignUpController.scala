@@ -1,18 +1,17 @@
 package io.scalac.controllers.auth
 
-import com.mohiva.play.silhouette.api.{SignUpEvent, Silhouette}
+import com.mohiva.play.silhouette.api.Silhouette
 import monix.execution.Scheduler
-import play.api.libs.json.JsValue
+import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
 
 import io.scalac.common.auth.BearerTokenEnv
 import io.scalac.common.entities.GenericResponse
 import io.scalac.common.logger.Logging
 import io.scalac.common.play._
-import io.scalac.common.services._
-import io.scalac.services.auth.SignUpService
 import io.scalac.common.play.serializers.Serializers._
-import io.scalac.controllers.Serializers._
+import io.scalac.common.services._
+import io.scalac.services.auth.{SignInRequest, SignUpService, SingUpRequest}
 
 class SignUpController (
   silhouette: Silhouette[BearerTokenEnv],
@@ -33,24 +32,55 @@ class SignUpController (
     request.body.validate[IncomingSignUp].fold(
       invalid => badRequestFuture(s"Invalid body: ${invalid.mkString(" ")}"),
       incomingSignUp => {
-        signUpService.signUp(incomingSignUp).runAsync.map(
+        signUpService.signUp(SingUpRequest(incomingSignUp, request)).runAsync.map(
           _.fold(
-            handler {
-              case UserExists =>
+            handler[AuthError] {
+              case UserUnauthorized =>
+                logger.error(s"${request.path} - user [${incomingSignUp.email}] failed to register")
+                Unauthorized(GenericResponse("Failed to register").asJson)
+              case UserAlreadyExists =>
                 logger.info(s"${request.path} - user [${incomingSignUp.email}] already exists")
-                Ok(GenericResponse("AuthUser exists").asJson)
+                Ok(GenericResponse("User already registered").asJson)
             }.orElse(otherErrorsHandler),
             generatedToken => {
-//              silhouette.env.eventBus.publish(SignUpEvent(user, request))
               logger.info("Successfully generated token for new user")
-              Ok(generatedToken.asJson)
+              Ok(Json.obj("token" -> generatedToken.id))
             }
           )
         )
 
       }
     )
+  }
 
+  def signIn = silhouette.UnsecuredAction.async(parse.json) { implicit request: Request[JsValue] =>
+    implicit val emptyContext = EmptyContext()
+    implicit val c = request.attrs(RequestAttributes.Correlation)
+
+    logger.info(s"${request.path}")
+
+    request.body.validate[IncomingSignIn].fold(
+      invalid => badRequestFuture(s"Invalid body: ${invalid.mkString(" ")}"),
+      data => {
+        signUpService.signIn(SignInRequest(data, request)).runAsync.map(
+          _.fold(
+            handler[AuthError] {
+              case UserUnauthorized =>
+                logger.info(s"${request.path} - user [${data.email}] unauthorized")
+                Unauthorized
+              case UserNotFound =>
+                logger.info(s"${request.path} - user [${data.email}] not found")
+                Unauthorized
+            }.orElse(otherErrorsHandler),
+            generatedToken => {
+              logger.info("Successfully generated token for new user")
+              Ok(Json.obj("token" -> generatedToken.id))
+            }
+          )
+        )
+
+      }
+    )
   }
 
 }

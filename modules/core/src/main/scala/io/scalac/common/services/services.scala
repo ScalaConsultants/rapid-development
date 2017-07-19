@@ -1,5 +1,7 @@
 package io.scalac.common
 
+import scala.concurrent.Future
+
 import io.scalac.common.logger.AppLogger
 import monix.eval.Task
 import monix.execution.misc.NonFatal
@@ -16,11 +18,16 @@ package object services {
   sealed trait ServiceError extends Error
   sealed trait ExternalServiceError extends Error
   sealed trait DatabaseError extends Error
+  sealed trait AuthError extends Error
 
   final case class ServiceFailed(msg: String) extends ServiceError
   final case class MissingResource(msg: String) extends ServiceError
   final case class InvalidResource(msg: Seq[String]) extends ServiceError
-  final case object UserExists extends ServiceError
+
+  final case class AuthFailed(msg: String) extends AuthError
+  final case object UserAlreadyExists extends AuthError
+  final case object UserNotFound extends AuthError
+  final case object UserUnauthorized extends AuthError
 
   final case class DatabaseCallFailed(msg: String) extends DatabaseError
   final case class ResourceNotFound(msg: String) extends DatabaseError
@@ -74,6 +81,50 @@ package object services {
         case ResourceNotFound(msg) =>
           MissingResource(msg)
       })
+    }
+
+    val toAuthResponse: Task[Either[AuthError, T]] = {
+      dBResponse.map(_.leftMap {
+        case DatabaseCallFailed(msg) =>
+          AuthFailed(msg)
+        case _:ResourceNotFound =>
+          UserUnauthorized
+      })
+    }
+  }
+
+  implicit class ServiceResponseImplicits[T](response: ServiceResponse[T]) {
+
+    import cats.syntax.either._
+
+    val toAuthResponse: Task[Either[AuthError, T]] = {
+      response.map(_.leftMap {
+        case ServiceFailed(msg) =>
+          AuthFailed(msg)
+        case _ =>
+          AuthFailed("Failed to process authentication or authorization")
+      })
+    }
+  }
+
+  implicit class FutureToServiceImplicits[T](async: Future[T]) {
+
+    import cats.syntax.either._
+
+    def asServiceCall = {
+      Task.deferFutureAction(implicit scheduler => async)
+        .map(_.asRight[ServiceError])
+        .onErrorHandle { ex =>
+          ServiceFailed(ex.getMessage).asLeft[T]
+        }
+    }
+
+    def asAuthCall = {
+      Task.deferFutureAction(implicit scheduler => async)
+        .map(_.asRight[AuthError])
+        .onErrorHandle { ex =>
+          AuthFailed(ex.getMessage).asLeft[T]
+        }
     }
   }
 

@@ -9,9 +9,9 @@ import io.scalac.domain.dao.AuthTokenDao
 
 trait AuthTokenService {
 
-  def create: Service[UserId, AuthToken, ServiceError]
-  def validate: Service[TokenId, Boolean, ServiceError]
-  def clean: Service[Unit, Seq[AuthToken], ServiceError]
+  def create: Service[UserId, AuthToken, AuthError]
+  def validate: Service[TokenId, Boolean, AuthError]
+  def clean: Service[Unit, Seq[AuthToken], AuthError]
 }
 
 class DefaultAuthTokenService(
@@ -19,7 +19,7 @@ class DefaultAuthTokenService(
   clock: AppClock
 ) extends AuthTokenService with Logging {
 
-  override def create: Service[UserId, AuthToken, ServiceError] =
+  override def create: Service[UserId, AuthToken, AuthError] =
     Service("io.scalac.services.auth.DefaultAuthTokenService.create") { req => _ =>
       //TODO get time shift from config
 
@@ -28,10 +28,10 @@ class DefaultAuthTokenService(
         userId = req,
         expiry = clock.now.plusDays(1)
       )
-      authTokenDao.save(authToken).toServiceResponse
+      authTokenDao.save(authToken).toAuthResponse
     }
 
-  override def validate: Service[TokenId, Boolean, ServiceError] = ???
+  override def validate: Service[TokenId, Boolean, AuthError] = ???
 
-  override def clean: Service[Unit, Seq[AuthToken], ServiceError] = ???
+  override def clean: Service[Unit, Seq[AuthToken], AuthError] = ???
 }

@@ -7,6 +7,7 @@ import com.mohiva.play.silhouette.api.services._
 import com.mohiva.play.silhouette.api.util._
 import com.mohiva.play.silhouette.api.{Environment, EventBus, SilhouetteProvider}
 import com.mohiva.play.silhouette.impl.authenticators._
+import com.mohiva.play.silhouette.impl.providers.CredentialsProvider
 import com.mohiva.play.silhouette.impl.util._
 import com.mohiva.play.silhouette.password.BCryptPasswordHasher
 import com.mohiva.play.silhouette.persistence.repositories.{CacheAuthenticatorRepository, DelegableAuthInfoRepository}
@@ -16,6 +17,7 @@ import play.api.{BuiltInComponents, Configuration, mvc}
 import pureconfig.ConfigConvert.{catchReadError, viaNonEmptyString}
 import pureconfig.{ConfigConvert, loadConfigOrThrow}
 
+import io.scalac.bootstrap.config.SilhouetteConfig
 import io.scalac.common.auth.{BearerTokenEnv, CustomSecuredErrorHandler, CustomUnsecuredErrorHandler}
 import io.scalac.services.auth.{AuthUserService, DefaultSignUpService, DelegablePasswordInfoDao}
 
@@ -40,6 +42,8 @@ trait SilhouetteComponents
   override def unsecuredBodyParser: BodyParsers.Default = silhouetteDefaultBodyParser
   override def userAwareBodyParser: BodyParsers.Default = silhouetteDefaultBodyParser
 
+  val silhouetteConfig = loadConfigOrThrow[SilhouetteConfig](configuration.underlying.getConfig("silhouette"))
+
   val cacheLayer = new PlayCacheLayer(defaultCacheApi)
   val idGenerator = new SecureRandomIDGenerator()
   val passwordHasher = new BCryptPasswordHasher
@@ -56,13 +60,16 @@ trait SilhouetteComponents
     new DelegableAuthInfoRepository(passwordInfoDao)
   }
 
-  val signUpService = new DefaultSignUpService(authUsersService, authInfoRepository, passwordHasherRegistry, authTokenService, appClock)
+  val credentialsProvider = new CredentialsProvider(authInfoRepository, passwordHasherRegistry)
 
   val silhouette = {
     val authenticatorService = provideAuthenticatorService(idGenerator, cacheLayer, configuration, silhouetteClock)
     val env = provideEnvironment(authUsersService, authenticatorService, silhouetteEventBus)
     new SilhouetteProvider[BearerTokenEnv](env, securedAction, unsecuredAction, userAwareAction)
   }
+
+  val signUpService = new DefaultSignUpService(authUsersService, authInfoRepository, passwordHasherRegistry,
+    authTokenService, credentialsProvider, silhouette, silhouetteConfig, appClock)
 
   def provideEnvironment(
     userService: AuthUserService,

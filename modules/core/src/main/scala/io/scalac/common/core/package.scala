@@ -15,6 +15,7 @@ package object core {
     userId: UserId,
     expiry: DateTime
   )
+  final case class AuthorizationToken(id: String) extends AnyVal
 
   final case class CorrelationId(id: UUID) extends AnyVal
 
