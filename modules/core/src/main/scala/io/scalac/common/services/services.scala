@@ -136,6 +136,7 @@ package object services {
     def apply[Req, Res, E <: Error](serviceId: String)
                                    (block: Req => ServiceContext => Task[Either[E, Res]]): Service[Req, Res, E] =
       new Service[Req, Res, E] {
+        //TODO logger and profiler should not be passed here, they are not needed for subsequent service invocations
         override def apply[Ctx: Context, P: Profiler, L: Logger](req: Req): Task[Either[E, Res]] = {
           val context = implicitly[Context[_]]
           val profiler = implicitly[Profiler[_]]

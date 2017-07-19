@@ -2,19 +2,17 @@ package io.scalac.common.play
 
 import scala.concurrent._
 
-import org.slf4j.MarkerFactory
-import play.api._
 import _root_.controllers.AssetsFinder
+import org.slf4j.{LoggerFactory, MarkerFactory}
+import play.api._
 import play.api.http.DefaultHttpErrorHandler
 import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.mvc._
 import play.api.routing.Router
-
-import io.scalac.common.core.Correlation
-import io.scalac.common.entities.GenericResponse
-import io.scalac.common.logger.Logging
 import play.core.SourceMapper
+
+import io.scalac.common.entities.GenericResponse
 
 class RootHttpErrorHandler(
   env: Environment,
@@ -24,8 +22,9 @@ class RootHttpErrorHandler(
   assetsFinder: AssetsFinder
 )(implicit executionContext: ExecutionContext)
   extends DefaultHttpErrorHandler(env, config, sourceMapper, router)
-    with InstrumentedErrorHandler
-    with Logging {
+    with InstrumentedErrorHandler {
+
+  private val logger = LoggerFactory.getLogger(getClass)
 
   override implicit val ec: ExecutionContext = executionContext
 
@@ -57,12 +56,10 @@ class RootHttpErrorHandler(
 
   /** Logging every 5XX error */
   override def logServerError(request: RequestHeader, usefulException: UsefulException): Unit = {
-    implicit val c = Correlation.getCorrelation(request.headers.toSimpleMap)
-    val id = usefulException.id
     val (method, uri) = (request.method, request.uri)
     val internalErrorMarker = MarkerFactory.getMarker("INTERNAL")
-    val msg = s"$id - Internal server error, for ($method) [$uri]"
-    logger.error(msg, usefulException, Map(internalErrorMarker.getName -> usefulException.description))
+    val msg = s"${usefulException.id} - Internal server error, for ($method) [$uri]"
+    logger.error(internalErrorMarker, msg, usefulException)
   }
 
   override def onBadRequest(request: RequestHeader, message: String): Future[Result] =

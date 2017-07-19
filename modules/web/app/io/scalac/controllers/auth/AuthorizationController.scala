@@ -11,7 +11,7 @@ import io.scalac.common.logger.Logging
 import io.scalac.common.play._
 import io.scalac.common.play.serializers.Serializers._
 import io.scalac.common.services._
-import io.scalac.services.auth.{SignInRequest, AuthorizationService, SingUpRequest}
+import io.scalac.services.auth.{AuthorizationService, SignInRequest, SingUpRequest}
 
 class AuthorizationController (
   silhouette: Silhouette[BearerTokenEnv],
@@ -24,8 +24,8 @@ class AuthorizationController (
 
   //TODO provide support with withParsedEntity
   def signUp = silhouette.UnsecuredAction.async(parse.json) { implicit request: Request[JsValue] =>
-    implicit val emptyContext = EmptyContext()
-    implicit val c = request.attrs(RequestAttributes.Correlation)
+    implicit val ctx = getServiceContext
+    implicit val c = ctx.correlation
 
     logger.info(s"${request.path}")
 
@@ -54,8 +54,8 @@ class AuthorizationController (
   }
 
   def signIn = silhouette.UnsecuredAction.async(parse.json) { implicit request: Request[JsValue] =>
-    implicit val emptyContext = EmptyContext()
-    implicit val c = request.attrs(RequestAttributes.Correlation)
+    implicit val ctx = getServiceContext
+    implicit val c = ctx.correlation
 
     logger.info(s"${request.path}")
 
@@ -85,12 +85,12 @@ class AuthorizationController (
 
   def signOut = silhouette.SecuredAction.async { implicit request =>
 //    silhouette.env.eventBus.publish(LogoutEvent(request.identity, request))
-    implicit val c = request.attrs(RequestAttributes.Correlation)
-    implicit val userContext = ServiceContext(c, Map.empty, Some(request.identity.user), None)
+    implicit val ctx = getServiceContext
+    implicit val c = ctx.correlation
 
     logger.info(s"${request.path}")
     silhouette.env.authenticatorService.discard(request.authenticator, Ok).map { result =>
-      logger.info(s"Successfully logged out user ${request.identity.user.id.get}")
+      logger.info(s"Successfully logged out user")
       result
     }
   }
