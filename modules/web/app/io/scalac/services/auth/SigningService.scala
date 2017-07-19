@@ -21,13 +21,13 @@ import io.scalac.common.services._
 import io.scalac.common.syntax._
 import io.scalac.domain.entities.User
 
-trait SignUpService {
+trait SigningService {
 
   def signUp: Service[SingUpRequest, AuthorizationToken, AuthError]
   def signIn: Service[SignInRequest, AuthorizationToken, AuthError]
 }
 
-class DefaultSignUpService(
+class DefaultSigningService(
   authUserService: AuthUserService,
   authInfoRepository: AuthInfoRepository, //grrr
   passwordHasherRegistry: PasswordHasherRegistry,
@@ -36,10 +36,10 @@ class DefaultSignUpService(
   silhouette: Silhouette[BearerTokenEnv],
   silhouetteConfig: SilhouetteConfig,
   clock: AppClock
-)(implicit val profiler: ServiceProfiler) extends SignUpService with Logging {
+)(implicit val profiler: ServiceProfiler) extends SigningService with Logging {
 
   override def signUp: Service[SingUpRequest, AuthorizationToken, AuthError] =
-    Service("io.scalac.services.auth.DefaultSignUpService.signUp") { req => implicit ctx =>
+    Service("io.scalac.services.auth.DefaultSigningService.signUp") { req => implicit ctx =>
 
       implicit val rh = req.requestHeader
       implicit val c = ctx.correlation
@@ -48,7 +48,8 @@ class DefaultSignUpService(
       val singUpData = req.incomingSignUp
       val loginInfo = LoginInfo(CredentialsProvider.ID, singUpData.email)
       Task.deferFutureAction(implicit scheduler => authUserService.retrieve(loginInfo)).flatMap {
-        case Some(_) =>
+        case Some(user) =>
+          logger.info(s"Found already existing user during sign up, [userId=${user.user.id.get}]")
           Task.now(UserAlreadyExists.asLeft[AuthorizationToken])
 
         case None =>
@@ -71,7 +72,7 @@ class DefaultSignUpService(
           (for {
             userId        <- authUserService.store(authUser).eitherT
             _             <- authInfoRepository.add(loginInfo, authInfo).asAuthCall.eitherT
-            _             <- authTokenService.create(userId).eitherT //TODO not needed? https://github.com/mohiva/play-silhouette-angular-seed/blob/master/app/controllers/SignUpController.scala
+//            _             <- authTokenService.create(userId).eitherT //TODO not needed? https://github.com/mohiva/play-silhouette-angular-seed/blob/master/app/controllers/SignUpController.scala
             authenticator <- silhouette.env.authenticatorService.create(loginInfo).asAuthCall.eitherT
             token         <- silhouette.env.authenticatorService.init(authenticator).asAuthCall.eitherT
           } yield AuthorizationToken(token)).value
@@ -86,7 +87,7 @@ class DefaultSignUpService(
     }
 
   override def signIn: Service[SignInRequest, AuthorizationToken, AuthError] =
-    Service("io.scalac.services.auth.DefaultSignUpService.signIn") { req => implicit ctx =>
+    Service("io.scalac.services.auth.DefaultSigningService.signIn") { req => implicit ctx =>
 
       implicit val reqHeader = req.requestHeader
       implicit val c = ctx.correlation

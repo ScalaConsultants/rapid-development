@@ -33,8 +33,9 @@ class SlickAuthUsersDao(
 
   override def findByAuthProvider(providerId: String, providerKey: String): DatabaseResponse[Option[User]] = {
     val q = for {
-      (auth, user) <- authenticationProvidersRepository.tableQuery join usersRepo.tableQuery on (_.providerKey === _.email)
-                        if auth.providerId === providerId
+      (auth, user) <- authenticationProvidersRepository.tableQuery join usersRepo.tableQuery on { case (auth, users) =>
+        auth.providerKey === users.email
+      } if user.email === providerKey && auth.providerId === providerId
     } yield user
     Compiled(q).result.headOption
   }

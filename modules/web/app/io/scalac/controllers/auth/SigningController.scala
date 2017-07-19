@@ -11,11 +11,11 @@ import io.scalac.common.logger.Logging
 import io.scalac.common.play._
 import io.scalac.common.play.serializers.Serializers._
 import io.scalac.common.services._
-import io.scalac.services.auth.{SignInRequest, SignUpService, SingUpRequest}
+import io.scalac.services.auth.{SignInRequest, SigningService, SingUpRequest}
 
-class SignUpController (
+class SigningController (
   silhouette: Silhouette[BearerTokenEnv],
-  signUpService: SignUpService,
+  signUpService: SigningService,
   scheduler: Scheduler
 )(implicit profiler: ServiceProfiler, controllerComponents: ControllerComponents)
   extends AbstractController(controllerComponents) with Logging with ControllerHelper {
@@ -43,7 +43,7 @@ class SignUpController (
                 Ok(GenericResponse("User already registered").asJson)
             }.orElse(otherErrorsHandler),
             generatedToken => {
-              logger.info("Successfully generated token for new user")
+              logger.info("Successfully generated token for after signing up")
               Ok(Json.obj("token" -> generatedToken.id))
             }
           )
@@ -73,7 +73,7 @@ class SignUpController (
                 Unauthorized
             }.orElse(otherErrorsHandler),
             generatedToken => {
-              logger.info("Successfully generated token for new user")
+              logger.info("Successfully generated token after signing in")
               Ok(Json.obj("token" -> generatedToken.id))
             }
           )

@@ -19,7 +19,7 @@ import pureconfig.{ConfigConvert, loadConfigOrThrow}
 
 import io.scalac.bootstrap.config.SilhouetteConfig
 import io.scalac.common.auth.{BearerTokenEnv, CustomSecuredErrorHandler, CustomUnsecuredErrorHandler}
-import io.scalac.services.auth.{AuthUserService, DefaultSignUpService, DelegablePasswordInfoDao}
+import io.scalac.services.auth.{AuthUserService, DefaultSigningService, DelegablePasswordInfoDao}
 
 trait SilhouetteComponents
   extends EhCacheComponents
@@ -68,7 +68,7 @@ trait SilhouetteComponents
     new SilhouetteProvider[BearerTokenEnv](env, securedAction, unsecuredAction, userAwareAction)
   }
 
-  val signUpService = new DefaultSignUpService(authUsersService, authInfoRepository, passwordHasherRegistry,
+  val signUpService = new DefaultSigningService(authUsersService, authInfoRepository, passwordHasherRegistry,
     authTokenService, credentialsProvider, silhouette, silhouetteConfig, appClock)
 
   def provideEnvironment(

@@ -28,10 +28,10 @@
   <logger name="application" level="INFO" />
   <logger name="io.scalac" level="INFO" />
 
-  <logger name="slick.jdbc.JdbcBackend.statement" level="INFO"/>
-  <logger name="slick.jdbc.JdbcBackend.benchmark" level="INFO"/>
-  <logger name="slick.jdbc.StatementInvoker.result" level="INFO"/>
-  <logger name="scala.slick.jdbc.JdbcBackend.statement" level="INFO"/>
+  <logger name="slick.jdbc.JdbcBackend.statement" level="DEBUG"/>
+  <logger name="slick.jdbc.JdbcBackend.benchmark" level="DEBUG"/>
+  <logger name="slick.jdbc.StatementInvoker.result" level="DEBUG"/>
+  <logger name="scala.slick.jdbc.JdbcBackend.statement" level="DEBUG"/>
 
   <root level="INFO">
     <!--<appender-ref ref="ASYNCFILE" />-->
