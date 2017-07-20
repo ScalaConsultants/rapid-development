@@ -15,7 +15,6 @@ import monix.eval.Task
 
 trait NotesService {
 
-  def findAll(): ServiceResponse[Seq[OutgoingNote]] //TODO prepare Service without request...
   def list: Service[Pagination, Seq[OutgoingNote], ServiceError]
   def find: Service[UUID, Option[OutgoingNote], ServiceError]
   def create: Service[IncomingNote, UUID, ServiceError]
@@ -25,11 +24,6 @@ trait NotesService {
 class DefaultNotesService (
     notesDao: NotesDao)(implicit val profiler: ServiceProfiler)
   extends NotesService with Logging {
-
-  override def findAll(): ServiceResponse[Seq[OutgoingNote]] = {
-    //TODO what to do with db message? Map to Service message or just pass through?
-    notesDao.findAll().tmap(_.map(Conversions.toOutgoingNote)).toServiceResponse
-  }
 
   override def list: Service[Pagination, Seq[OutgoingNote], ServiceError] =
     Service("io.scalac.services.DefaultNotesService.list") { req => _ =>

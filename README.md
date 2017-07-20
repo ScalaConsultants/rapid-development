@@ -20,7 +20,7 @@ Play App for rapid development
 - [x] data persistence
 - [x] Ability to Dockerize application
 - [x] CRUD REST API for a dummy resource
-- [ ] Swagger specification for dummy resource
+- [X] (mostly done) authentication based on https://github.com/mohiva/play-silhouette
 - [x] migration to Play 2.6
 - [X] tests
 - [x] static views
@@ -28,7 +28,7 @@ Play App for rapid development
 - [ ] example of versioned endpoints - path or header negotiation?
 - [ ] CRSF
 - [ ] SSL
-- [ ] base authentication with lib like https://github.com/mohiva/play-silhouette
+
 - [ ] 3rdParty service call with build in timeout and circuit breaker
 - [ ] update README with information where are defined useful utils and implicit transformations
 - [ ] clear all code TODOs
@@ -94,3 +94,56 @@ and so on. This layer should communicate with `core` using business objects.
 `core` contains of two main packages: `io.scalac.common` and `io.scalac.domain`. The first one is responsible for
 handling cross-cutting concerns as e.g. logging while the second one is responsible for
 pure business logic. In future `core` may be split into two modules.
+
+### Authorization
+
+Authentication and authorization is build using [Sillouette](https://github.com/mohiva/play-silhouette).
+There is support for `sign up`, `sign in` and `log out` using `Bearer Tokens`.
+
+* `POST /auth/signup`
+
+```sh
+curl -X "POST" "http://localhost:9000/auth/signup" \
+     -H "X-Correlation-Id: fe0c44e9-8d08-4000-84b2-57ac8415c370" \
+     -H "Content-Type: application/json" \
+     -d $'{
+  "firstName": "Franek",
+  "lastName": "Dolas",
+  "email": "franek@dolas.pl",
+  "password": "secret"
+}'
+
+```
+
+* `POST /auth/signin`
+
+```sh
+curl -X "POST" "http://localhost:9000/auth/signin" \
+     -H "X-Correlation-Id: 657eb889-d393-4be7-8993-74d2fb21c7dc" \
+     -H "Content-Type: application/json" \
+     -d $'{
+  "email": "franek@dolas.pl",
+  "rememberMe": true,
+  "password": "secret"
+}'
+```
+
+* `POST /auth/signout`
+
+```sh
+curl -X "POST" "http://localhost:9000/auth/signout" \
+     -H "X-Correlation-Id: 0bac9444-fb58-4d87-be1a-3b7e409d9fca" \
+     -H "X-Auth-Token: 0d6802de92554c0877353e2ba43cafa954bebe4cb129e007396b20d191aea4b79acb70a5173387589374bec0c5021901de98446b2d204b5b825a9b7300e46ac6515d6f2fae6522a71c43a561c75b5652bf710294f1d9a7f37df1304a6f89ce00097c964faef12bb93115158c80388eba92e0d50f0a42af2d5709e0c272e0023f"
+```
+
+#### Missing parts
+
+Look for `TODO`s in code.
+
+* password reset
+* password change
+* sign up confirmation using email with activation link
+* periodical removal of expired tokens if needed
+
+Most of the code is based on sample projects [which uses cookies](https://github.com/mohiva/play-silhouette-seed)
+and another one [which uses Bearer Token](https://github.com/mohiva/play-silhouette-angular-seed).

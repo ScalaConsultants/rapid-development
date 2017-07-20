@@ -4,11 +4,10 @@ import java.util.UUID
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+
 import io.scalac.common.core.Correlation
 import io.scalac.common.entities.Pagination
-import io.scalac.common.play.RequestAttributes
 import io.scalac.common.services.{InvalidResource, MissingResource, NoopServiceProfiler, Service, ServiceError, ServiceFailed}
-import io.scalac.controllers.mock.NotesServiceMock
 import io.scalac.domain.BaseUnitTest
 import io.scalac.domain.services.NotesService
 import io.scalac.domain.services.transport.{IncomingNote, OutgoingNote, UpdateNote}
@@ -18,6 +17,8 @@ import org.scalatest.BeforeAndAfterAll
 import play.api.libs.json._
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{status, _}
+
+import io.scalac.domain.mock.NotesServiceMock
 
 class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
   implicit val system = ActorSystem()
@@ -31,7 +32,6 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
   "NotesController.all" should {
     val request =
       FakeRequest(GET, s"/notes")
-        .addAttr(RequestAttributes.Correlation, Correlation("cid"))
 
     "work" in new Fixture {
       val itemsNumber = 4
@@ -54,7 +54,6 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
   "NotesController.find" should {
     def request(id: UUID) =
       FakeRequest(GET, s"/notes/${id.toString}")
-        .addAttr(RequestAttributes.Correlation, Correlation("cid"))
 
     "return OK in case note has been found" in new Fixture {
       val service = new NotesServiceMock {
@@ -90,7 +89,6 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
     def request(id: UUID, jsonString: String) =
       FakeRequest(PUT, s"/notes/${id.toString}")
         .withJsonBody(Json.parse(jsonString))
-        .addAttr(RequestAttributes.Correlation, Correlation("cid"))
 
     val correctJsonString =
       """
@@ -169,7 +167,6 @@ class NotesControllerSpec extends BaseUnitTest with BeforeAndAfterAll {
     def request(jsonString: String) =
       FakeRequest(POST, "/notes")
         .withJsonBody(Json.parse(jsonString))
-        .addAttr(RequestAttributes.Correlation, Correlation("cid"))
 
     val correctJsonString =
       """{

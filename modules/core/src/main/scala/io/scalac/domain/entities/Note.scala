@@ -27,7 +27,7 @@ final case class Note(
 }
 
 class NotesSlickPostgresRepository (
-  val dbConfig: DatabaseConfig[PostgresJdbcProfile]//TODO or JdbcProfile and import PostgresJdbcProfile.api._ below? Safe?
+  val dbConfig: DatabaseConfig[PostgresJdbcProfile]
 ) extends VersionedRepository[Note, UUID, Int](dbConfig.profile) {
 
   import dbConfig.profile.api._
@@ -40,8 +40,8 @@ class NotesSlickPostgresRepository (
     override def id = column[UUID]("id", O.PrimaryKey)
     def creator = column[String]("creator", O.SqlType("VARCHAR(100)"))
     def note = column[String]("note", O.SqlType("TEXT"))
-    def createdAt = column[DateTime]("created_at")
-    def updatedAt = column[DateTime]("updated_at")
+    def createdAt = column[DateTime]("created_at", O.SqlType("timestamptz"))
+    def updatedAt = column[DateTime]("updated_at", O.SqlType("timestamptz"))
     override def version = column[Int]("version")
 
     def * = (id.?, creator, note, createdAt, updatedAt, version.?) <> ((
