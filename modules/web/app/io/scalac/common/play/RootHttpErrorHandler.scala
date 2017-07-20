@@ -1,8 +1,10 @@
 package io.scalac.common.play
 
 import scala.concurrent._
+import scala.util.control.NonFatal
 
 import _root_.controllers.AssetsFinder
+import com.mohiva.play.silhouette.api.exceptions.{NotAuthenticatedException, NotAuthorizedException, SilhouetteException}
 import org.slf4j.{LoggerFactory, MarkerFactory}
 import play.api._
 import play.api.http.DefaultHttpErrorHandler
@@ -29,15 +31,36 @@ class RootHttpErrorHandler(
   override implicit val ec: ExecutionContext = executionContext
 
   override protected def onDevServerError(request: RequestHeader, e: UsefulException): Future[Result] = {
+    logger.error(s"Unhandled DEV server error", e)
     Future.successful(InternalServerError(Json.obj(
       "error" -> Json.obj("message" -> e.getMessage, "errorId" -> e.id))))
   }
 
-  override def onProdServerError(request: RequestHeader, e: UsefulException): Future[Result] =
-    Future.successful(InternalServerError(views.html.serverError(GenericResponse("Please check logs"))(assetsFinder)))
+  override def onProdServerError(request: RequestHeader, e: UsefulException): Future[Result] = {
+    handleSilhouetteExceptions.applyOrElse(e.cause, (t: Throwable) => t match {
+      case NonFatal(_) =>
+        Future.successful(InternalServerError(
+          views.html.serverError(GenericResponse("Please check logs"))(assetsFinder)))
+    })
+  }
 
-  override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] =
+  private val handleSilhouetteExceptions: PartialFunction[Throwable, Future[Result]] = {
+//    https://www.silhouette.rocks/v5.0/docs/error-handling
+    case e: NotAuthorizedException =>
+      logger.error("Received unhandled NotAuthorizedException", e)
+      Future.successful(Forbidden)
+    case e: NotAuthenticatedException =>
+      logger.error("Received unhandled NotAuthenticatedException", e)
+      Future.successful(Unauthorized)
+    case e: SilhouetteException =>
+      logger.error("Received unhandled SilhouetteException", e)
+      Future.successful(Unauthorized)
+  }
+
+  override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
+    logger.error(s"Received client error with status code [$statusCode] and message [$message]")
     Future.successful(new Status(statusCode))
+  }
 
   override def onNotFound(request: RequestHeader, message: String): Future[Result] = {
     Future.successful(env.mode match {

@@ -9,6 +9,8 @@ trait InstrumentedErrorHandler extends HttpErrorHandler {
 
   implicit val ec: ExecutionContext
 
+  //TODO Inject ServiceProfiler or any other and measure time execution as well result of entire request
+
   abstract override def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     //Maps over result to have it invoked last in the chain
     super.onClientError(request, statusCode, message)
