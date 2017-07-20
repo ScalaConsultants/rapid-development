@@ -40,7 +40,7 @@ class RootHttpErrorHandler(
     handleSilhouetteExceptions.applyOrElse(e.cause, (t: Throwable) => t match {
       case NonFatal(_) =>
         Future.successful(InternalServerError(
-          views.html.serverError(GenericResponse("Please check logs"))(assetsFinder)))
+          views.html.serverError(GenericResponse("Unexpected error happened"))(assetsFinder)))
     })
   }
 

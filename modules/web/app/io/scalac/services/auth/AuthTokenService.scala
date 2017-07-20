@@ -7,6 +7,8 @@ import io.scalac.common.logger.Logging
 import io.scalac.common.services._
 import io.scalac.domain.dao.AuthTokenDao
 
+//TODO not sure, but service below might be only needed for cookies authentication or for Bearer to switch with CacheAuthenticatorRepository
+// ? https://github.com/mohiva/play-silhouette-angular-seed/blob/master/app/controllers/SignUpController.scala
 trait AuthTokenService {
 
   def create: Service[UserId, AuthToken, AuthError]

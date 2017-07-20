@@ -9,7 +9,6 @@ import io.scalac.domain.entities.{Note, NotesSlickPostgresRepository}
 
 trait NotesDao {
 
-//  def findAll: Service[Unit, Seq[Note], DatabaseError] //TODO decide
   def findAll(): DatabaseResponse[Seq[Note]]
   def listAll(pagination: Pagination): DatabaseResponse[Seq[Note]]
   def find(noteId: UUID): DatabaseResponse[Option[Note]]

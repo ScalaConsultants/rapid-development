@@ -27,7 +27,7 @@ final case class Note(
 }
 
 class NotesSlickPostgresRepository (
-  val dbConfig: DatabaseConfig[PostgresJdbcProfile]//TODO or JdbcProfile and import PostgresJdbcProfile.api._ below? Safe?
+  val dbConfig: DatabaseConfig[PostgresJdbcProfile]
 ) extends VersionedRepository[Note, UUID, Int](dbConfig.profile) {
 
   import dbConfig.profile.api._

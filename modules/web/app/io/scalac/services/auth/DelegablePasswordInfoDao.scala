@@ -25,8 +25,6 @@ class DelegablePasswordInfoDao(
   import dbExecutor.dbConfig.profile.api._
   implicit val ec = dbExecutor.scheduler
 
-  //TODO unclear to me if I should here also store/remove LoginInfo itself, but rather not
-
   override def find(loginInfo: LoginInfo): Future[Option[PasswordInfo]] = {
     val q = for {
       (_, passInfo) <- authProviderRepo.tableQuery join passwordRepo.tableQuery on (_.id === _.authProviderId)

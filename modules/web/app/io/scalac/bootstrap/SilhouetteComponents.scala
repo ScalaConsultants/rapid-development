@@ -96,6 +96,7 @@ trait SilhouetteComponents
     val config = loadConfigOrThrow[BearerTokenAuthenticatorSettings](configuration.underlying.getConfig("silhouette.authenticator"))
 
     //TODO cached, shouldn't be a problem even for multiple app instances... OR! for each instance new token might be generated
+    //Maybe adapt `AuthTokenService` to switch cached version
     //https://www.silhouette.rocks/v5.0/docs/authenticator
     val authenticatorRepository = new CacheAuthenticatorRepository[BearerTokenAuthenticator](cacheLayer)
 
