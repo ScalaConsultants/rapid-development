@@ -8,7 +8,6 @@ import io.scalac.domain.services.NotesService
 import io.scalac.domain.services.transport.{IncomingNote, OutgoingNote, UpdateNote}
 
 class NotesServiceMock extends NotesService {
-  override def findAll(): ServiceResponse[Seq[OutgoingNote]] = ???
   override def list: Service[Pagination, Seq[OutgoingNote], ServiceError] = ???
   override def find: Service[UUID, Option[OutgoingNote], ServiceError] = ???
   override def create: Service[IncomingNote, UUID, ServiceError] = ???
