@@ -4,7 +4,7 @@ Play App for rapid development
 #### Raw facts
 * Java 8 required
 * Scala 2.12.2
-* Play 2.6.0 with compile time dependency injection
+* Play 2.6.2 with compile time dependency injection
 * Slick 3.2 (`without play-slick extension`) with help from [pregenerated common repository calls](https://github.com/gonmarques/slick-repo)
 * Postgres 9.6.2 with [Slick Postgres extensions](https://github.com/tminglei/slick-pg)
 * Cats 0.9.0
@@ -28,7 +28,6 @@ Play App for rapid development
 - [ ] example of versioned endpoints - path or header negotiation?
 - [ ] CRSF
 - [ ] SSL
-
 - [ ] 3rdParty service call with build in timeout and circuit breaker
 - [ ] update README with information where are defined useful utils and implicit transformations
 - [ ] clear all code TODOs
