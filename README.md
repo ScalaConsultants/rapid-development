@@ -146,3 +146,5 @@ Look for `TODO`s in code.
 
 Most of the code is based on sample projects [which uses cookies](https://github.com/mohiva/play-silhouette-seed)
 and another one [which uses Bearer Token](https://github.com/mohiva/play-silhouette-angular-seed).
+
+Developed by [Scalac](https://scalac.io/?utm_source=scalac_github&utm_campaign=scalac1&utm_medium=web)
